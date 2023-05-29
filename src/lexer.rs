@@ -46,7 +46,7 @@ impl fmt::Debug for Token {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
-    KEYWORD,
+    KEYWORD(KeywordType),
     IDENT,
     NUMBER,
     SEMICOLON,
@@ -56,6 +56,11 @@ pub enum TokenType {
     DIV,
     ASSIGN,
     EOF,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum KeywordType {
+    LET,
 }
 
 pub struct Lexer {
@@ -158,8 +163,13 @@ impl Lexer {
         }
 
         if KEYWORDS.contains(&ident.as_str()) {
+            let keyword = match ident.as_str() {
+                "let" => KeywordType::LET,
+                _ => panic!("Unknown keyword: {}", ident),
+            };
+
             return Token {
-                ttype: TokenType::KEYWORD,
+                ttype: TokenType::KEYWORD(keyword),
                 literal: ident,
                 position: self.position.clone(),
             };
@@ -207,14 +217,18 @@ impl Lexer {
 mod test {
     #[test]
     fn lexer_test() {
-        use super::Lexer;
-        use super::TokenType;
+        use super::{KeywordType, Lexer, TokenType};
 
-        let input = String::from("let five = 5;");
+        let input = String::from(
+            r#"
+            let five = 5;
+            let ten = 10;
+            "#,
+        );
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        assert_eq!(tokens[0].ttype, TokenType::KEYWORD);
+        assert_eq!(tokens[0].ttype, TokenType::KEYWORD(KeywordType::LET));
         assert_eq!(tokens[0].literal, String::from("let"));
         assert_eq!(tokens[1].ttype, TokenType::IDENT);
         assert_eq!(tokens[1].literal, String::from("five"));
@@ -224,5 +238,16 @@ mod test {
         assert_eq!(tokens[3].literal, String::from("5"));
         assert_eq!(tokens[4].ttype, TokenType::SEMICOLON);
         assert_eq!(tokens[4].literal, String::from(";"));
+
+        assert_eq!(tokens[5].ttype, TokenType::KEYWORD(KeywordType::LET));
+        assert_eq!(tokens[5].literal, String::from("let"));
+        assert_eq!(tokens[6].ttype, TokenType::IDENT);
+        assert_eq!(tokens[6].literal, String::from("ten"));
+        assert_eq!(tokens[7].ttype, TokenType::ASSIGN);
+        assert_eq!(tokens[7].literal, String::from("="));
+        assert_eq!(tokens[8].ttype, TokenType::NUMBER);
+        assert_eq!(tokens[8].literal, String::from("10"));
+        assert_eq!(tokens[9].ttype, TokenType::SEMICOLON);
+        assert_eq!(tokens[9].literal, String::from(";"));
     }
 }
