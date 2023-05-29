@@ -88,16 +88,8 @@ impl Parser {
     fn parse_if_expr(&mut self) -> Option<Expression> {
         let token = self.current_token.clone();
 
-        if !self.expect_peek(TokenType::LParen) {
-            return None;
-        }
-
         self.next_token();
         let condition = self.parse_expression(Precedence::Lowest);
-
-        if !self.expect_peek(TokenType::RParen) {
-            return None;
-        }
 
         if !self.expect_peek(TokenType::LBrace) {
             return None;
