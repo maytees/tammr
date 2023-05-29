@@ -46,22 +46,35 @@ impl fmt::Debug for Token {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
-    KEYWORD(KeywordType),
-    IDENT,
-    NUMBER,
-    SEMICOLON,
-    MUL,
-    ADD,
-    SUB,
-    DIV,
-    ASSIGN,
-    EOF,
+    Keyword(KeywordType),
+    Ident,
+    Number,
+    Semicolon,
+    Mul,
+    Add,
+    Sub,
+    Div,
+    Assign,
+    NotEq,
+    Lt,
+    Gt,
+    Bang,
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+    Comma,
+    Eof,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum KeywordType {
-    LET,
-    RETURN,
+    Let,
+    Return,
+    True,
+    False,
+    If,
+    Else,
 }
 
 pub struct Lexer {
@@ -70,14 +83,14 @@ pub struct Lexer {
     current: char,
 }
 
-const KEYWORDS: &'static [&'static str] = &["let", "return"];
+const KEYWORDS: &[&str] = &["let", "return", "true", "false", "if", "else"];
 
 impl Lexer {
     pub fn new(src: String) -> Self {
         Self {
             src: src.clone(),
             position: Position::new(),
-            current: src.chars().nth(0).unwrap_or('\0'),
+            current: src.chars().next().unwrap_or('\0'),
         }
     }
 
@@ -112,7 +125,7 @@ impl Lexer {
         }
 
         tokens.push(Token {
-            ttype: TokenType::EOF,
+            ttype: TokenType::Eof,
             literal: String::from(""),
             position: self.position.clone(),
         });
@@ -120,39 +133,97 @@ impl Lexer {
     }
 
     fn tokenize_single(&mut self) -> Option<Token> {
-        return match self.current {
+        match self.current {
             '=' => Some(Token {
-                ttype: TokenType::ASSIGN,
+                ttype: TokenType::Assign,
                 literal: String::from("="),
                 position: self.position.clone(),
             }),
             ';' => Some(Token {
-                ttype: TokenType::SEMICOLON,
+                ttype: TokenType::Semicolon,
                 literal: String::from(";"),
                 position: self.position.clone(),
             }),
             '+' => Some(Token {
-                ttype: TokenType::ADD,
+                ttype: TokenType::Add,
                 literal: String::from("+"),
                 position: self.position.clone(),
             }),
             '-' => Some(Token {
-                ttype: TokenType::SUB,
+                ttype: TokenType::Sub,
                 literal: String::from("-"),
                 position: self.position.clone(),
             }),
             '*' => Some(Token {
-                ttype: TokenType::MUL,
+                ttype: TokenType::Mul,
                 literal: String::from("*"),
                 position: self.position.clone(),
             }),
             '/' => Some(Token {
-                ttype: TokenType::DIV,
+                ttype: TokenType::Div,
                 literal: String::from("/"),
                 position: self.position.clone(),
             }),
+            '!' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    return Some(Token {
+                        ttype: TokenType::NotEq,
+                        literal: String::from("!="),
+                        position: self.position.clone(),
+                    });
+                }
+
+                Some(Token {
+                    ttype: TokenType::Bang,
+                    literal: String::from("!"),
+                    position: self.position.clone(),
+                })
+            }
+            '<' => Some(Token {
+                ttype: TokenType::Lt,
+                literal: String::from("<"),
+                position: self.position.clone(),
+            }),
+            '>' => Some(Token {
+                ttype: TokenType::Gt,
+                literal: String::from(">"),
+                position: self.position.clone(),
+            }),
+            '(' => Some(Token {
+                ttype: TokenType::LParen,
+                literal: String::from("("),
+                position: self.position.clone(),
+            }),
+            ')' => Some(Token {
+                ttype: TokenType::RParen,
+                literal: String::from(")"),
+                position: self.position.clone(),
+            }),
+            '{' => Some(Token {
+                ttype: TokenType::LBrace,
+                literal: String::from("{"),
+                position: self.position.clone(),
+            }),
+            '}' => Some(Token {
+                ttype: TokenType::RBrace,
+                literal: String::from("}"),
+                position: self.position.clone(),
+            }),
+            ',' => Some(Token {
+                ttype: TokenType::Comma,
+                literal: String::from(","),
+                position: self.position.clone(),
+            }),
             _ => None,
-        };
+        }
+    }
+
+    fn peek(&self) -> char {
+        self.src
+            .chars()
+            .nth(self.position.index + 1)
+            .unwrap_or('\0')
     }
 
     fn gen_ident(&mut self) -> Token {
@@ -165,20 +236,24 @@ impl Lexer {
 
         if KEYWORDS.contains(&ident.as_str()) {
             let keyword = match ident.as_str() {
-                "let" => KeywordType::LET,
-                "return" => KeywordType::RETURN,
-                _ => panic!("Unknown keyword: {}", ident),
+                "let" => KeywordType::Let,
+                "return" => KeywordType::Return,
+                "true" => KeywordType::True,
+                "false" => KeywordType::False,
+                "if" => KeywordType::If,
+                "else" => KeywordType::Else,
+                _ => panic!("Unknown Keyword: {}", ident),
             };
 
             return Token {
-                ttype: TokenType::KEYWORD(keyword),
+                ttype: TokenType::Keyword(keyword),
                 literal: ident,
                 position: self.position.clone(),
             };
         }
 
         Token {
-            ttype: TokenType::IDENT,
+            ttype: TokenType::Ident,
             literal: ident,
             position: self.position.clone(),
         }
@@ -193,7 +268,7 @@ impl Lexer {
         }
 
         Token {
-            ttype: TokenType::NUMBER,
+            ttype: TokenType::Number,
             literal: number,
             position: self.position.clone(),
         }
@@ -202,11 +277,7 @@ impl Lexer {
     pub fn advance(&mut self) {
         self.position.index += 1;
         self.position.col += 1;
-        self.current = self
-            .src
-            .chars()
-            .nth(self.position.index as usize)
-            .unwrap_or('\0');
+        self.current = self.src.chars().nth(self.position.index).unwrap_or('\0');
 
         if self.current == '\n' {
             self.position.line += 1;
@@ -230,26 +301,26 @@ mod test {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        assert_eq!(tokens[0].ttype, TokenType::KEYWORD(KeywordType::LET));
+        assert_eq!(tokens[0].ttype, TokenType::Keyword(KeywordType::Let));
         assert_eq!(tokens[0].literal, String::from("let"));
-        assert_eq!(tokens[1].ttype, TokenType::IDENT);
+        assert_eq!(tokens[1].ttype, TokenType::Ident);
         assert_eq!(tokens[1].literal, String::from("five"));
-        assert_eq!(tokens[2].ttype, TokenType::ASSIGN);
+        assert_eq!(tokens[2].ttype, TokenType::Assign);
         assert_eq!(tokens[2].literal, String::from("="));
-        assert_eq!(tokens[3].ttype, TokenType::NUMBER);
+        assert_eq!(tokens[3].ttype, TokenType::Number);
         assert_eq!(tokens[3].literal, String::from("5"));
-        assert_eq!(tokens[4].ttype, TokenType::SEMICOLON);
+        assert_eq!(tokens[4].ttype, TokenType::Semicolon);
         assert_eq!(tokens[4].literal, String::from(";"));
 
-        assert_eq!(tokens[5].ttype, TokenType::KEYWORD(KeywordType::LET));
+        assert_eq!(tokens[5].ttype, TokenType::Keyword(KeywordType::Let));
         assert_eq!(tokens[5].literal, String::from("let"));
-        assert_eq!(tokens[6].ttype, TokenType::IDENT);
+        assert_eq!(tokens[6].ttype, TokenType::Ident);
         assert_eq!(tokens[6].literal, String::from("ten"));
-        assert_eq!(tokens[7].ttype, TokenType::ASSIGN);
+        assert_eq!(tokens[7].ttype, TokenType::Assign);
         assert_eq!(tokens[7].literal, String::from("="));
-        assert_eq!(tokens[8].ttype, TokenType::NUMBER);
+        assert_eq!(tokens[8].ttype, TokenType::Number);
         assert_eq!(tokens[8].literal, String::from("10"));
-        assert_eq!(tokens[9].ttype, TokenType::SEMICOLON);
+        assert_eq!(tokens[9].ttype, TokenType::Semicolon);
         assert_eq!(tokens[9].literal, String::from(";"));
     }
 }

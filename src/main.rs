@@ -1,6 +1,6 @@
 use std::io::{stdout, Write};
 
-use crate::ast::{Program, Statement};
+use crate::ast::Program;
 
 mod ast;
 mod lexer;
@@ -20,9 +20,9 @@ fn main() {
         let mut l = lexer::Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        for token in &tokens {
-            println!("{:?}", token);
-        }
+        // for token in &tokens {
+        //     println!("{:?}", token);
+        // }
 
         let mut parser = parser::Parser::new(tokens);
         let program: Option<Program> = parser.parse_program();
