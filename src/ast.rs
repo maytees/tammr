@@ -30,14 +30,19 @@ pub enum Statement {
         name: Identifier,
         value: Expression,
     },
+    Return {
+        token: Token,
+        value: Expression,
+    },
 }
 
 impl std::fmt::Debug for Statement {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Statement::Let { name, value, .. } => {
-                write!(f, "(LET; IDENT: {}; VALUE: {}) ", name, value)
+                write!(f, "(LET; NAME: {}; VALUE: {}) ", name, value)
             }
+            Statement::Return { value, .. } => write!(f, "(RETURN; VALUE: {}) ", value),
         }
     }
 }

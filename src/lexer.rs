@@ -61,6 +61,7 @@ pub enum TokenType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum KeywordType {
     LET,
+    RETURN,
 }
 
 pub struct Lexer {
@@ -69,7 +70,7 @@ pub struct Lexer {
     current: char,
 }
 
-const KEYWORDS: &'static [&'static str] = &["let"];
+const KEYWORDS: &'static [&'static str] = &["let", "return"];
 
 impl Lexer {
     pub fn new(src: String) -> Self {
@@ -165,6 +166,7 @@ impl Lexer {
         if KEYWORDS.contains(&ident.as_str()) {
             let keyword = match ident.as_str() {
                 "let" => KeywordType::LET,
+                "return" => KeywordType::RETURN,
                 _ => panic!("Unknown keyword: {}", ident),
             };
 

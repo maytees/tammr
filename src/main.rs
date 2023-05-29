@@ -18,8 +18,13 @@ fn main() {
         }
 
         let mut l = lexer::Lexer::new(input);
+        let tokens = l.gen_tokens();
 
-        let mut parser = parser::Parser::new(l.gen_tokens());
+        for token in &tokens {
+            println!("{:?}", token);
+        }
+
+        let mut parser = parser::Parser::new(tokens);
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {

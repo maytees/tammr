@@ -36,8 +36,26 @@ impl Parser {
     pub fn parse_statement(&mut self) -> Option<Statement> {
         match self.current_token.ttype {
             TokenType::KEYWORD(KeywordType::LET) => self.parse_let_statement(),
+            TokenType::KEYWORD(KeywordType::RETURN) => self.parse_return_statement(),
             _ => None,
         }
+    }
+
+    pub fn parse_return_statement(&mut self) -> Option<Statement> {
+        self.next_token();
+
+        // TODO: Skip expressions until semicolon for now
+        while self.current_token.ttype != TokenType::SEMICOLON {
+            self.next_token();
+        }
+
+        return Some(Statement::Return {
+            token: self.current_token.clone(),
+            value: Expression::Identifier(Identifier {
+                token: self.current_token.clone(),
+                value: self.current_token.literal.clone(),
+            }),
+        });
     }
 
     pub fn parse_let_statement(&mut self) -> Option<Statement> {
@@ -86,12 +104,54 @@ impl Parser {
 
 #[cfg(test)]
 mod test {
+    use super::Parser;
+    use crate::lexer::Lexer;
+    use crate::parser::Statement;
+
+    #[test]
+    fn return_statement() {
+        let input = String::from(
+            r#"
+            return 5;
+            return 10;
+            return 993322;
+            "#,
+        );
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+        let program = p.parse_program();
+        if let Some(program) = program {
+            if program.len() != 3 {
+                panic!(
+                    "Program does not contain 3 statements, got {}",
+                    program.len()
+                );
+            }
+
+            let tests = vec!["5", "10", "993322"];
+
+            // for (i, tt) in tests.iter().enumerate() {
+            //     let stmt = &program[i];
+            //     match stmt {
+            //         Statement::Return { value, .. } => {
+            //             if value.to_string() != tt.to_string() {
+            //                 panic!("Expected value to be {}, got {}", tt, value);
+            //             }
+            //         }
+            //         _ => {
+            //             panic!("Expected statement to be return, got {:?}", stmt);
+            //         }
+            //     }
+            // }
+        } else {
+            panic!("Parse program returned None");
+        }
+    }
+
     #[test]
     fn let_statement() {
-        use super::Parser;
-        use crate::lexer::Lexer;
-        use crate::parser::Statement;
-
         let input = String::from(
             r#"
             let x = 5;
