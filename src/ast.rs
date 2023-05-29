@@ -5,6 +5,7 @@ pub struct Identifier {
     pub token: Token,
     pub value: String,
 }
+
 impl std::fmt::Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", &self.value)
@@ -47,6 +48,11 @@ pub enum Expression {
         consequence: Box<BlockStatement>,
         alternative: Option<Box<BlockStatement>>,
     },
+    FunctionLiteral {
+        token: Token, // fn tok
+        parameters: Vec<Identifier>,
+        body: Box<BlockStatement>,
+    },
 }
 
 impl std::fmt::Display for Expression {
@@ -75,6 +81,19 @@ impl std::fmt::Display for Expression {
                     write!(f, " else {:?})", alt)?;
                 }
                 Ok(())
+            }
+            Expression::FunctionLiteral {
+                parameters, body, ..
+            } => {
+                write!(f, "fn(")?;
+                for (i, param) in parameters.iter().enumerate() {
+                    if i == parameters.len() - 1 {
+                        write!(f, "{}", param)?;
+                    } else {
+                        write!(f, "{}, ", param)?;
+                    }
+                }
+                write!(f, ") {{{:?}}})", body)
             }
         }
     }

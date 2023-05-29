@@ -75,6 +75,7 @@ pub enum KeywordType {
     False,
     If,
     Else,
+    Fn,
 }
 
 pub struct Lexer {
@@ -83,7 +84,7 @@ pub struct Lexer {
     current: char,
 }
 
-const KEYWORDS: &[&str] = &["let", "return", "true", "false", "if", "else"];
+const KEYWORDS: &[&str] = &["let", "return", "true", "false", "if", "else", "fn"];
 
 impl Lexer {
     pub fn new(src: String) -> Self {
@@ -242,6 +243,7 @@ impl Lexer {
                 "false" => KeywordType::False,
                 "if" => KeywordType::If,
                 "else" => KeywordType::Else,
+                "fn" => KeywordType::Fn,
                 _ => panic!("Unknown Keyword: {}", ident),
             };
 

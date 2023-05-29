@@ -63,6 +63,7 @@ impl Parser {
             }
             TokenType::LParen => self.parse_group_expr(),
             TokenType::Keyword(KeywordType::If) => self.parse_if_expr(),
+            TokenType::Keyword(KeywordType::Fn) => self.parse_fn_literal(),
             _ => return None,
         };
 
@@ -83,6 +84,64 @@ impl Parser {
         }
 
         left
+    }
+
+    fn parse_fn_literal(&mut self) -> Option<Expression> {
+        let token = self.current_token.clone();
+
+        if !self.expect_peek(TokenType::LParen) {
+            return None;
+        }
+
+        let parameters = self.parse_fn_parameters();
+
+        if !self.expect_peek(TokenType::LBrace) {
+            return None;
+        }
+
+        let body = self.parse_block_statement();
+
+        Some(Expression::FunctionLiteral {
+            token,
+            parameters,
+            body: Box::new(body),
+        })
+    }
+
+    fn parse_fn_parameters(&mut self) -> Vec<Identifier> {
+        let mut identifiers = Vec::new();
+
+        if self.peek_token.ttype == TokenType::RParen {
+            self.next_token();
+            return identifiers;
+        }
+
+        self.next_token();
+
+        let ident = Identifier {
+            token: self.current_token.clone(),
+            value: self.current_token.literal.clone(),
+        };
+
+        identifiers.push(ident);
+
+        while self.peek_token.ttype == TokenType::Comma {
+            self.next_token();
+            self.next_token();
+
+            let ident = Identifier {
+                token: self.current_token.clone(),
+                value: self.current_token.literal.clone(),
+            };
+
+            identifiers.push(ident);
+        }
+
+        if !self.expect_peek(TokenType::RParen) {
+            return Vec::new();
+        }
+
+        identifiers
     }
 
     fn parse_if_expr(&mut self) -> Option<Expression> {
@@ -307,6 +366,40 @@ mod test {
     use super::Parser;
     use crate::lexer::Lexer;
     use crate::parser::Statement;
+
+    #[test]
+    fn fn_literal() {
+        let input = String::from("fn(x, y) { x + y; }");
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+        let program = p.parse_program();
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}",
+                    program.len()
+                );
+            }
+
+            let stmt = &program[0];
+
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != "fn(x, y) {[x + y;]}" {
+                        panic!("Expected value to be fn(x, y) {{[x + y;]}}, got {}", value);
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        } else {
+            panic!("Parse program returned None");
+        }
+    }
 
     #[test]
     fn if_statement() {
