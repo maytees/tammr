@@ -44,7 +44,7 @@ impl fmt::Debug for Token {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     KEYWORD,
     IDENT,
@@ -200,5 +200,29 @@ impl Lexer {
             self.position.line += 1;
             self.position.col = 0;
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn lexer_test() {
+        use super::Lexer;
+        use super::TokenType;
+
+        let input = String::from("let five = 5;");
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        assert_eq!(tokens[0].ttype, TokenType::KEYWORD);
+        assert_eq!(tokens[0].literal, String::from("let"));
+        assert_eq!(tokens[1].ttype, TokenType::IDENT);
+        assert_eq!(tokens[1].literal, String::from("five"));
+        assert_eq!(tokens[2].ttype, TokenType::ASSIGN);
+        assert_eq!(tokens[2].literal, String::from("="));
+        assert_eq!(tokens[3].ttype, TokenType::NUMBER);
+        assert_eq!(tokens[3].literal, String::from("5"));
+        assert_eq!(tokens[4].ttype, TokenType::SEMICOLON);
+        assert_eq!(tokens[4].literal, String::from(";"));
     }
 }
