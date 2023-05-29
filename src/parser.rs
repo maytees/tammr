@@ -312,7 +312,7 @@ mod test {
     fn if_statement() {
         let input = String::from(
             r#"
-            if (x < y) {
+            if x < y {
                 return x;
             } else {
                 return y;
