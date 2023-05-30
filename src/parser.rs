@@ -79,11 +79,46 @@ impl Parser {
                 | TokenType::Mul
                 | TokenType::NotEq
                 | TokenType::Sub => self.parse_infix_expression(left.unwrap()),
+                TokenType::LParen => self.parse_fn_call(left.unwrap()),
                 _ => return left,
             };
         }
 
         left
+    }
+
+    fn parse_fn_call(&mut self, function: Expression) -> Option<Expression> {
+        Some(Expression::FunctionCall {
+            token: self.current_token.clone(),
+            function: Box::new(function),
+            arguments: self.parse_fn_arguments(),
+        })
+    }
+
+    fn parse_fn_arguments(&mut self) -> Vec<Expression> {
+        let mut args = Vec::new();
+
+        if self.peek_token.ttype == TokenType::RParen {
+            self.next_token();
+            return args;
+        }
+
+        self.next_token();
+
+        args.push(self.parse_expression(Precedence::Lowest).unwrap());
+
+        while self.peek_token.ttype == TokenType::Comma {
+            self.next_token();
+            self.next_token();
+
+            args.push(self.parse_expression(Precedence::Lowest).unwrap());
+        }
+
+        if !self.expect_peek(TokenType::RParen) {
+            return Vec::new();
+        }
+
+        args
     }
 
     fn parse_fn_literal(&mut self) -> Option<Expression> {
@@ -368,6 +403,43 @@ mod test {
     use crate::parser::Statement;
 
     #[test]
+    fn fn_call() {
+        let input = String::from("add(1, 2 * 3, 4 + 5);");
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+        let program = p.parse_program();
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}",
+                    program.len()
+                );
+            }
+
+            let stmt = &program[0];
+
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != "add(1, (2 * 3), (4 + 5))" {
+                        panic!(
+                            "Expected value to be add(1, (2 * 3), (4 + 5)), got {}",
+                            value
+                        );
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        } else {
+            panic!("Parse program returned None");
+        }
+    }
+
+    #[test]
     fn fn_literal() {
         let input = String::from("fn(x, y) { x + y; }");
 
@@ -388,8 +460,8 @@ mod test {
 
             match stmt {
                 Statement::Expression { value, .. } => {
-                    if value.to_string() != "fn(x, y) {[x + y;]}" {
-                        panic!("Expected value to be fn(x, y) {{[x + y;]}}, got {}", value);
+                    if value.to_string() != "fn(x, y) {[(x + y)]}" {
+                        panic!("Expected value to be fn(x, y) {{[(x + y)]}}, got {}", value);
                     }
                 }
                 _ => {

@@ -53,6 +53,11 @@ pub enum Expression {
         parameters: Vec<Identifier>,
         body: Box<BlockStatement>,
     },
+    FunctionCall {
+        token: Token,              // (
+        function: Box<Expression>, // Identifier or FunctionLiteral
+        arguments: Vec<Expression>,
+    },
 }
 
 impl std::fmt::Display for Expression {
@@ -93,7 +98,22 @@ impl std::fmt::Display for Expression {
                         write!(f, "{}, ", param)?;
                     }
                 }
-                write!(f, ") {{{:?}}})", body)
+                write!(f, ") {{{:?}}}", body)
+            }
+            Expression::FunctionCall {
+                function,
+                arguments,
+                ..
+            } => {
+                write!(f, "{}(", function)?;
+                for (i, arg) in arguments.iter().enumerate() {
+                    if i == arguments.len() - 1 {
+                        write!(f, "{}", arg)?;
+                    } else {
+                        write!(f, "{}, ", arg)?;
+                    }
+                }
+                write!(f, ")")
             }
         }
     }
