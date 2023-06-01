@@ -1,8 +1,9 @@
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
     Null,
+    Return(Box<Object>),
 }
 
 impl std::fmt::Display for Object {
@@ -11,6 +12,7 @@ impl std::fmt::Display for Object {
             Object::Integer(int) => write!(f, "{}", int),
             Object::Boolean(bool) => write!(f, "{}", bool),
             Object::Null => write!(f, "null"),
+            Object::Return(obj) => write!(f, "{}", obj),
         }
     }
 }

@@ -1,6 +1,8 @@
-use crate::ast::{Expression, Literal, Program, Statement};
+use std::collections::btree_map::Values;
+
+use crate::ast::{BlockStatement, Expression, Literal, Program, Statement};
 use crate::lexer::Token;
-use crate::object::Object;
+use crate::object::{self, Object};
 
 pub struct Evaluator {}
 
@@ -14,10 +16,23 @@ impl Evaluator {
 
         for stmt in program {
             match self.eval_statement(stmt) {
-                Some(stmt) => {
-                    result = Some(stmt);
-                }
-                None => todo!(),
+                Some(Object::Return(obj)) => return Some(Object::Return(obj)),
+                Some(obj) => result = Some(obj),
+                None => panic!("Cannot evaluate statement: {:?}", stmt),
+            }
+        }
+
+        result
+    }
+
+    fn eval_block_statement(&mut self, stmts: &BlockStatement) -> Option<Object> {
+        let mut result: Option<Object> = None;
+
+        for stmt in stmts {
+            match self.eval_statement(stmt) {
+                Some(Object::Return(obj)) => return Some(Object::Return(obj)),
+                Some(obj) => result = Some(obj),
+                None => panic!("Cannot evaluate statement: {:?}", stmt),
             }
         }
 
@@ -27,8 +42,19 @@ impl Evaluator {
     fn eval_statement(&mut self, stmt: &Statement) -> Option<Object> {
         match stmt {
             Statement::Expression { token: _, value } => self.eval_expression(value),
+            Statement::Return { token: _, value } => self.eval_return(value),
             _ => None,
         }
+    }
+
+    fn eval_return(&mut self, value: &Expression) -> Option<Object> {
+        let value = self.eval_expression(value);
+
+        if let Some(value) = value {
+            return Some(Object::Return(Box::new(value)));
+        }
+
+        None
     }
 
     fn eval_expression(&mut self, value: &Expression) -> Option<Object> {
@@ -67,9 +93,9 @@ impl Evaluator {
         match condition {
             Object::Boolean(bool) => {
                 if bool {
-                    self.eval(consequence)
+                    self.eval_block_statement(consequence)
                 } else if let Some(alt) = alternative {
-                    self.eval(alt)
+                    self.eval_block_statement(alt)
                 } else {
                     Some(Object::Null)
                 }
@@ -170,6 +196,53 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn test_return_statements() {
+        let tests = vec![
+            ("return 10;", Object::Integer(10)),
+            ("return 10; 9;", Object::Integer(10)),
+            ("return 2 * 5; 9;", Object::Integer(10)),
+            ("9; return 2 * 5; 9;", Object::Integer(10)),
+            (
+                "if (10 > 1) {
+                    if (10 > 1) {
+                        return 10;
+                    }
+                    return 1;
+                }",
+                Object::Integer(10),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program) {
+                    // assert that result is equal to expected
+                    match result {
+                        Object::Return(obj) => {
+                            assert_eq!(*obj, expected);
+                        }
+                        _ => panic!("Expected {}, got {}", expected, result),
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_conditionals() {
