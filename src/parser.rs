@@ -78,6 +78,7 @@ impl Parser {
                 | TokenType::Lt
                 | TokenType::Mul
                 | TokenType::NotEq
+                | TokenType::Eq
                 | TokenType::Sub => self.parse_infix_expression(left.unwrap()),
                 TokenType::LParen => self.parse_fn_call(left.unwrap()),
                 _ => return left,
@@ -263,7 +264,7 @@ impl Parser {
 
     fn token_precedence(&mut self, ttype: TokenType) -> Precedence {
         match ttype {
-            TokenType::Assign | TokenType::NotEq => Precedence::Equals,
+            TokenType::Assign | TokenType::NotEq | TokenType::Eq => Precedence::Equals,
             TokenType::Lt | TokenType::Gt => Precedence::LessGreater,
             TokenType::Add | TokenType::Sub => Precedence::Sum,
             TokenType::Div | TokenType::Mul => Precedence::Product,
@@ -299,14 +300,14 @@ impl Parser {
     }
 
     fn parse_boolean(&mut self) -> Option<Expression> {
-        Some(Expression::Boolean(Literal::Boolean(
+        Some(Expression::Literal(Literal::Boolean(
             self.current_token.ttype == TokenType::Keyword(KeywordType::True),
         )))
     }
 
     fn parse_integer_literal(&mut self) -> Option<Expression> {
         let int = self.current_token.literal.parse::<i64>().unwrap();
-        let lit = Expression::Integer(Literal::Integer(int));
+        let lit = Expression::Literal(Literal::Integer(int));
 
         Some(lit)
     }
@@ -401,6 +402,39 @@ mod test {
     use super::Parser;
     use crate::lexer::Lexer;
     use crate::parser::Statement;
+
+    #[test]
+    fn eq_test() {
+        let input = String::from("5 == 5;");
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+
+        let program = p.parse_program();
+
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}, prgm: {:?}",
+                    program.len(),
+                    program
+                );
+            }
+            let stmt = &program[0];
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != "(5 == 5)" {
+                        panic!("Expected value to be (5 == 5), got {}", value);
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        }
+    }
 
     #[test]
     fn fn_call() {

@@ -58,6 +58,7 @@ pub enum TokenType {
     NotEq,
     Lt,
     Gt,
+    Eq,
     Bang,
     LParen,
     RParen,
@@ -135,11 +136,6 @@ impl Lexer {
 
     fn tokenize_single(&mut self) -> Option<Token> {
         match self.current {
-            '=' => Some(Token {
-                ttype: TokenType::Assign,
-                literal: String::from("="),
-                position: self.position.clone(),
-            }),
             ';' => Some(Token {
                 ttype: TokenType::Semicolon,
                 literal: String::from(";"),
@@ -165,6 +161,22 @@ impl Lexer {
                 literal: String::from("/"),
                 position: self.position.clone(),
             }),
+            '=' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    return Some(Token {
+                        ttype: TokenType::Eq,
+                        literal: String::from("=="),
+                        position: self.position.clone(),
+                    });
+                }
+
+                Some(Token {
+                    ttype: TokenType::Assign,
+                    literal: String::from("="),
+                    position: self.position.clone(),
+                })
+            }
             '!' => {
                 if self.peek() == '=' {
                     self.advance();
@@ -290,6 +302,7 @@ impl Lexer {
 
 #[cfg(test)]
 mod test {
+
     #[test]
     fn lexer_test() {
         use super::{KeywordType, Lexer, TokenType};

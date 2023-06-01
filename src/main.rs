@@ -1,10 +1,13 @@
 use std::io::{stdout, Write};
 
-use crate::ast::Program;
+use crate::{ast::Program, eval::Evaluator};
 
 mod ast;
+mod eval;
 mod lexer;
+mod object;
 mod parser;
+
 fn main() {
     println!("Welcome to the Monkey language repl!");
     loop {
@@ -20,6 +23,7 @@ fn main() {
         let mut l = lexer::Lexer::new(input);
         let tokens = l.gen_tokens();
 
+        // Lexer output
         // for token in &tokens {
         //     println!("{:?}", token);
         // }
@@ -28,8 +32,15 @@ fn main() {
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {
-            for stmt in program {
-                println!("{:?}", stmt);
+            // Parser output
+            // for stmt in &program {
+            //     println!("AST {:?}", stmt);
+            // }
+
+            let mut evaluator = Evaluator::new();
+
+            if let Some(result) = evaluator.eval(&program) {
+                println!("{}", result);
             }
         }
     }

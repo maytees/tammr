@@ -27,10 +27,10 @@ impl std::fmt::Display for Literal {
     }
 }
 
+#[derive(Clone)]
 pub enum Expression {
     Identifier(Identifier),
-    Integer(Literal),
-    Boolean(Literal),
+    Literal(Literal),
     Prefix {
         token: Token,
         operator: String,
@@ -64,7 +64,7 @@ impl std::fmt::Display for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Expression::Identifier(ident) => write!(f, "{}", ident.value),
-            Expression::Integer(lit) => write!(f, "{}", lit),
+            Expression::Literal(lit) => write!(f, "{}", lit),
             Expression::Prefix {
                 operator, right, ..
             } => write!(f, "({}{})", operator, right),
@@ -74,7 +74,6 @@ impl std::fmt::Display for Expression {
                 right,
                 ..
             } => write!(f, "({} {} {})", left, operator, right),
-            Expression::Boolean(lit) => write!(f, "{}", lit),
             Expression::If {
                 condition,
                 consequence,
@@ -119,6 +118,7 @@ impl std::fmt::Display for Expression {
     }
 }
 
+#[derive(Clone)]
 pub enum Statement {
     Let {
         token: Token,
