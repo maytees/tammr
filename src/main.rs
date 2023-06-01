@@ -1,8 +1,9 @@
 use std::io::{stdout, Write};
 
-use crate::{ast::Program, eval::Evaluator};
+use crate::{ast::Program, env::Env, eval::Evaluator};
 
 mod ast;
+mod env;
 mod eval;
 mod lexer;
 mod object;
@@ -10,6 +11,8 @@ mod parser;
 
 fn main() {
     println!("Welcome to the Monkey language repl!");
+    let mut env = Env::new();
+
     loop {
         print!(">> ");
         let mut input = String::new();
@@ -39,7 +42,7 @@ fn main() {
 
             let mut evaluator = Evaluator::new();
 
-            if let Some(result) = evaluator.eval(&program) {
+            if let Some(result) = evaluator.eval(&program, &mut env) {
                 println!("{}", result);
             }
         }

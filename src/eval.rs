@@ -1,8 +1,7 @@
-use std::collections::btree_map::Values;
-
-use crate::ast::{BlockStatement, Expression, Literal, Program, Statement};
+use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
+use crate::env::Env;
 use crate::lexer::Token;
-use crate::object::{self, Object};
+use crate::object::Object;
 
 pub struct Evaluator {}
 
@@ -11,44 +10,66 @@ impl Evaluator {
         Self {}
     }
 
-    pub fn eval(&mut self, program: &Program) -> Option<Object> {
+    pub fn eval(&mut self, program: &Program, env: &mut Env) -> Option<Object> {
         let mut result: Option<Object> = None;
 
         for stmt in program {
-            match self.eval_statement(stmt) {
+            match self.eval_statement(stmt, env) {
                 Some(Object::Return(obj)) => return Some(Object::Return(obj)),
+                Some(Object::Error(msg)) => panic!("{}", msg),
+                Some(Object::Empty) => continue,
                 Some(obj) => result = Some(obj),
-                None => panic!("Cannot evaluate statement: {:?}", stmt),
+                None => {
+                    return Some(
+                        self.new_error(&format!("Could not evaluate statement: {:?}", stmt)),
+                    )
+                }
             }
         }
 
         result
     }
 
-    fn eval_block_statement(&mut self, stmts: &BlockStatement) -> Option<Object> {
+    fn new_error(&self, msg: &str) -> Object {
+        Object::Error(msg.to_string())
+    }
+
+    fn eval_block_statement(&mut self, stmts: &BlockStatement, env: &mut Env) -> Option<Object> {
         let mut result: Option<Object> = None;
 
         for stmt in stmts {
-            match self.eval_statement(stmt) {
+            match self.eval_statement(stmt, env) {
                 Some(Object::Return(obj)) => return Some(Object::Return(obj)),
+                Some(Object::Error(msg)) => return Some(Object::Error(msg)),
+                Some(Object::Empty) => continue,
                 Some(obj) => result = Some(obj),
-                None => panic!("Cannot evaluate statement: {:?}", stmt),
+                None => {
+                    return Some(self.new_error(&format!("Cannot evaluate statement: {:?}", stmt)))
+                }
             }
         }
 
         result
     }
 
-    fn eval_statement(&mut self, stmt: &Statement) -> Option<Object> {
+    fn eval_statement(&mut self, stmt: &Statement, env: &mut Env) -> Option<Object> {
         match stmt {
-            Statement::Expression { token: _, value } => self.eval_expression(value),
-            Statement::Return { token: _, value } => self.eval_return(value),
-            _ => None,
+            Statement::Expression { token: _, value } => self.eval_expression(value, env),
+            Statement::Return { token: _, value } => self.eval_return(value, env),
+            Statement::Let {
+                token: _,
+                name,
+                value,
+            } => {
+                let value = self.eval_expression(value, env)?;
+                env.set(&name.value, value);
+                Some(Object::Empty)
+            }
         }
     }
 
-    fn eval_return(&mut self, value: &Expression) -> Option<Object> {
-        let value = self.eval_expression(value);
+    fn eval_return(&mut self, value: &Expression, env: &mut Env) -> Option<Object> {
+        let value = self.eval_expression(value, env);
 
         if let Some(value) = value {
             return Some(Object::Return(Box::new(value)));
@@ -57,28 +78,39 @@ impl Evaluator {
         None
     }
 
-    fn eval_expression(&mut self, value: &Expression) -> Option<Object> {
+    fn eval_expression(&mut self, value: &Expression, env: &mut Env) -> Option<Object> {
         match value {
             Expression::Literal(lit) => self.eval_literal(lit),
             Expression::Prefix {
                 token: _,
                 operator,
                 right,
-            } => self.eval_prefix_expression(operator, right),
+            } => self.eval_prefix_expression(operator, right, env),
             Expression::Infix {
                 token: _,
                 left,
                 operator,
                 right,
-            } => self.eval_infix_expression(left, operator, right),
+            } => self.eval_infix_expression(left, operator, right, env),
             Expression::If {
                 token,
                 condition,
                 consequence,
                 alternative,
-            } => self.eval_if_expression(token, condition, consequence, alternative),
+            } => self.eval_if_expression(token, condition, consequence, alternative, env),
+            Expression::Identifier(iden) => self.eval_identifier(iden, env),
             _ => None,
         }
+    }
+
+    fn eval_identifier(&mut self, iden: &Identifier, env: &mut Env) -> Option<Object> {
+        let value = env.get(&iden.value);
+
+        if let Some(value) = value {
+            return Some(value);
+        }
+
+        Some(self.new_error(&format!("Identifier not found: {}", iden.value)))
     }
 
     fn eval_if_expression(
@@ -87,20 +119,21 @@ impl Evaluator {
         condition: &Expression,
         consequence: &Program,
         alternative: &Option<Box<Program>>,
+        env: &mut Env,
     ) -> Option<Object> {
-        let condition = self.eval_expression(condition)?;
+        let condition = self.eval_expression(condition, env)?;
 
         match condition {
             Object::Boolean(bool) => {
                 if bool {
-                    self.eval_block_statement(consequence)
+                    self.eval_block_statement(consequence, env)
                 } else if let Some(alt) = alternative {
-                    self.eval_block_statement(alt)
+                    self.eval_block_statement(alt, env)
                 } else {
                     Some(Object::Null)
                 }
             }
-            _ => panic!("Use if conditionals on booleans"),
+            _ => Some(self.new_error("Use if conditionals on booleans")),
         }
     }
 
@@ -109,9 +142,10 @@ impl Evaluator {
         left: &Expression,
         operator: &str,
         right: &Expression,
+        env: &mut Env,
     ) -> Option<Object> {
-        let left = self.eval_expression(left)?;
-        let right = self.eval_expression(right)?;
+        let left = self.eval_expression(left, env)?;
+        let right = self.eval_expression(right, env)?;
 
         match (right, left) {
             (Object::Integer(right_value), Object::Integer(left_value)) => {
@@ -120,7 +154,7 @@ impl Evaluator {
             (Object::Boolean(right_value), Object::Boolean(left_value)) => {
                 self.eval_boolean_infix_expression(&left_value, operator, &right_value)
             }
-            _ => panic!("Use infix operators on integers"),
+            _ => Some(self.new_error("Use infix operators on integers")),
         }
     }
 
@@ -133,7 +167,7 @@ impl Evaluator {
         match operator {
             "==" => Some(Object::Boolean(left == right)),
             "!=" => Some(Object::Boolean(left != right)),
-            _ => panic!("Invalid operator: {}", operator),
+            _ => Some(self.new_error(&format!("Invalid operator: {}", operator))),
         }
     }
 
@@ -152,31 +186,36 @@ impl Evaluator {
             ">" => Some(Object::Boolean(left > right)),
             "==" => Some(Object::Boolean(left == right)),
             "!=" => Some(Object::Boolean(left != right)),
-            _ => panic!("Invalid operator: {}", operator),
+            _ => Some(self.new_error(&format!("Invalid operator: {}", operator))),
         }
     }
 
-    fn eval_prefix_expression(&mut self, operator: &str, right: &Expression) -> Option<Object> {
-        let right = self.eval_expression(right)?;
+    fn eval_prefix_expression(
+        &mut self,
+        operator: &str,
+        right: &Expression,
+        env: &mut Env,
+    ) -> Option<Object> {
+        let right = self.eval_expression(right, env)?;
 
         match operator {
             "!" => self.eval_bang_prefix(right),
             "-" => self.eval_minus_prefix(right),
-            _ => None,
+            _ => Some(self.new_error("Invalid prefix operator")),
         }
     }
 
     fn eval_bang_prefix(&mut self, right: Object) -> Option<Object> {
         match right {
             Object::Boolean(bool) => Some(Object::Boolean(!bool)),
-            _ => panic!("Use ! prefix operator on booleans!"),
+            _ => Some(self.new_error("Use ! prefix operator on booleans!")),
         }
     }
 
     fn eval_minus_prefix(&mut self, right: Object) -> Option<Object> {
         match right {
             Object::Integer(int) => Some(Object::Integer(-int)),
-            _ => panic!("Use - prefix operator on integers or floats"),
+            _ => Some(self.new_error("Use - prefix operator on integers or floats")),
         }
     }
 
@@ -191,11 +230,48 @@ impl Evaluator {
 #[cfg(test)]
 mod test {
     use crate::ast::Program;
+    use crate::env::Env;
     use crate::lexer::Lexer;
     use crate::object::Object;
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn let_env() {
+        let tests = vec![
+            ("let x = 10; x;", Object::Integer(10)),
+            ("let x = 10 * 10; x;", Object::Integer(100)),
+            ("let x = 10; let y = 10; x + y;", Object::Integer(20)),
+            (
+                "let x = 10; let y = 10; let z = x + y; z;",
+                Object::Integer(20),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    assert_eq!(result, expected);
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_return_statements() {
@@ -231,7 +307,7 @@ mod test {
                 // create new evaluator
                 let mut evaluator = Evaluator::new();
                 // evaluate program
-                if let Some(result) = evaluator.eval(&program) {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                     // assert that result is equal to expected
                     match result {
                         Object::Return(obj) => {
@@ -271,7 +347,7 @@ mod test {
                 // create new evaluator
                 let mut evaluator = Evaluator::new();
                 // evaluate program
-                if let Some(result) = evaluator.eval(&program) {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                     // assert that result is equal to expected
                     assert_eq!(result, expected);
                 }
@@ -305,7 +381,7 @@ mod test {
 
             if let Some(program) = program {
                 let mut evaluator = Evaluator::new();
-                if let Some(result) = evaluator.eval(&program) {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                     assert_eq!(result, Object::Boolean(expected));
                 }
             }
@@ -330,7 +406,7 @@ mod test {
             if let Some(program) = program {
                 let mut evaluator = Evaluator::new();
 
-                if let Some(result) = evaluator.eval(&program) {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                     assert_eq!(result, Object::Boolean(expected));
                 }
             }
@@ -362,7 +438,7 @@ mod test {
             if let Some(program) = program {
                 let mut evaluator = Evaluator::new();
 
-                if let Some(result) = evaluator.eval(&program) {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                     assert_eq!(result, Object::Integer(expected));
                 }
             }
@@ -381,7 +457,7 @@ mod test {
         if let Some(program) = program {
             let mut evaluator = Evaluator::new();
 
-            if let Some(result) = evaluator.eval(&program) {
+            if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                 assert_eq!(result, Object::Boolean(false));
             }
         }
@@ -399,7 +475,7 @@ mod test {
         if let Some(program) = program {
             let mut evaluator = Evaluator::new();
 
-            if let Some(result) = evaluator.eval(&program) {
+            if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                 assert_eq!(result, Object::Integer(5));
             }
         }
@@ -417,7 +493,7 @@ mod test {
         if let Some(program) = program {
             let mut evaluator = Evaluator::new();
 
-            if let Some(result) = evaluator.eval(&program) {
+            if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
                 assert_eq!(result, Object::Boolean(true));
             }
         }

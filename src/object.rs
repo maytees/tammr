@@ -1,9 +1,12 @@
 #[derive(PartialEq, Debug, Clone)]
+
 pub enum Object {
     Integer(i64),
     Boolean(bool),
     Null,
     Return(Box<Object>),
+    Error(String),
+    Empty,
 }
 
 impl std::fmt::Display for Object {
@@ -13,6 +16,8 @@ impl std::fmt::Display for Object {
             Object::Boolean(bool) => write!(f, "{}", bool),
             Object::Null => write!(f, "null"),
             Object::Return(obj) => write!(f, "{}", obj),
+            Object::Error(msg) => write!(f, "{}", msg),
+            Object::Empty => write!(f, ""),
         }
     }
 }
