@@ -15,6 +15,7 @@ pub enum Object {
         body: BlockStatement,
         env: Env,
     },
+    String(String),
 }
 
 impl std::fmt::Display for Object {
@@ -37,6 +38,7 @@ impl std::fmt::Display for Object {
                 }
                 write!(f, "fn({}) {{\n{:?}\n}}", params, body)
             }
+            Object::String(string) => write!(f, "{}", string),
         }
     }
 }

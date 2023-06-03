@@ -65,6 +65,7 @@ pub enum TokenType {
     LBrace,
     RBrace,
     Comma,
+    String,
     Eof,
 }
 
@@ -228,6 +229,21 @@ impl Lexer {
                 literal: String::from(","),
                 position: self.position.clone(),
             }),
+            '"' => {
+                let mut string = String::new();
+                self.advance();
+
+                while self.current != '"' {
+                    string.push(self.current);
+                    self.advance();
+                }
+
+                Some(Token {
+                    ttype: TokenType::String,
+                    literal: string,
+                    position: self.position.clone(),
+                })
+            }
             _ => None,
         }
     }
@@ -302,6 +318,18 @@ impl Lexer {
 
 #[cfg(test)]
 mod test {
+
+    #[test]
+    fn test_string() {
+        use super::Lexer;
+
+        let input = String::from(r#""Hello, World!""#);
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        assert_eq!(tokens[0].ttype, super::TokenType::String);
+        assert_eq!(tokens[0].literal, String::from("Hello, World!"));
+    }
 
     #[test]
     fn lexer_test() {

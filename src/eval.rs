@@ -215,7 +215,22 @@ impl Evaluator {
             (Object::Boolean(right_value), Object::Boolean(left_value)) => {
                 self.eval_boolean_infix_expression(&left_value, operator, &right_value)
             }
+            (Object::String(right_value), Object::String(left_value)) => {
+                self.eval_string_infix_expression(&left_value, operator, &right_value)
+            }
             _ => Some(self.new_error("Use infix operators on integers")),
+        }
+    }
+
+    fn eval_string_infix_expression(
+        &mut self,
+        left: &str,
+        operator: &str,
+        right: &str,
+    ) -> Option<Object> {
+        match operator {
+            "+" => Some(Object::String(format!("{}{}", left, right))),
+            _ => Some(self.new_error(&format!("Invalid operator: {}", operator))),
         }
     }
 
@@ -284,6 +299,7 @@ impl Evaluator {
         match lit {
             Literal::Integer(int) => Some(Object::Integer(*int)),
             Literal::Boolean(bool) => Some(Object::Boolean(*bool)),
+            Literal::String(string) => Some(Object::String(string.clone())),
         }
     }
 }
@@ -297,6 +313,63 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn test_string_concatenation() {
+        let tests = vec![
+            (
+                "\"Hello\" + \" \" + \"World!\"",
+                Object::String("Hello World!".to_string()),
+            ),
+            (
+                "\"Hello\" + \" \" + \"World!\" + \" \" + \"From\" + \" \" + \"Rust!\"",
+                Object::String("Hello World! From Rust!".to_string()),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    assert_eq!(result, expected);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_string_literal() {
+        let test = "\"Hello World!\"";
+
+        let mut l = Lexer::new(test.to_string());
+        let tokens = l.gen_tokens();
+
+        let mut parser = Parser::new(tokens);
+        let program: Option<Program> = parser.parse_program();
+
+        let mut evaluator = Evaluator::new();
+
+        if let Some(program) = program {
+            if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                assert_eq!(result, Object::String("Hello World!".to_string()));
+            }
+        }
+    }
+
     #[test]
     fn function_call_test() {
         let tests = vec![

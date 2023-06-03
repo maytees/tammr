@@ -16,6 +16,7 @@ impl std::fmt::Display for Identifier {
 pub enum Literal {
     Integer(i64),
     Boolean(bool),
+    String(String),
 }
 
 impl std::fmt::Display for Literal {
@@ -23,6 +24,7 @@ impl std::fmt::Display for Literal {
         match self {
             Literal::Integer(int) => write!(f, "{}", int),
             Literal::Boolean(bool) => write!(f, "{}", bool),
+            Literal::String(string) => write!(f, "{}", string),
         }
     }
 }

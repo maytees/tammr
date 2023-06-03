@@ -56,6 +56,7 @@ impl Parser {
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
         let mut left = match self.current_token.ttype {
             TokenType::Ident => self.parse_identifier(),
+            TokenType::String => self.parse_string_literal(),
             TokenType::Number => self.parse_integer_literal(),
             TokenType::Bang | TokenType::Sub => self.parse_prefix_expression(),
             TokenType::Keyword(KeywordType::True) | TokenType::Keyword(KeywordType::False) => {
@@ -86,6 +87,12 @@ impl Parser {
         }
 
         left
+    }
+
+    fn parse_string_literal(&mut self) -> Option<Expression> {
+        Some(Expression::Literal(Literal::String(
+            self.current_token.literal.clone(),
+        )))
     }
 
     fn parse_fn_call(&mut self, function: Expression) -> Option<Expression> {
@@ -402,6 +409,37 @@ mod test {
     use super::Parser;
     use crate::lexer::Lexer;
     use crate::parser::Statement;
+
+    #[test]
+    fn test_string_literal() {
+        let input = String::from("\"hello world\";");
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+        let program = p.parse_program();
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}",
+                    program.len()
+                );
+            }
+
+            let stmt = &program[0];
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != "hello world" {
+                        panic!("Expected value to be hello world, got {}", value);
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        }
+    }
 
     #[test]
     fn eq_test() {
