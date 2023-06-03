@@ -252,7 +252,19 @@ impl Lexer {
                 self.advance();
 
                 while self.current != '"' {
-                    string.push(self.current);
+                    if self.current == '\\' {
+                        self.advance();
+                        match self.current {
+                            'n' => string.push('\n'),
+                            't' => string.push('\t'),
+                            'r' => string.push('\r'),
+                            '\\' => string.push('\\'),
+                            '"' => string.push('"'),
+                            _ => panic!("Unknown escape character: {}", self.current),
+                        }
+                    } else {
+                        string.push(self.current);
+                    }
                     self.advance();
                 }
 
