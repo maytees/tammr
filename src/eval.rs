@@ -16,7 +16,7 @@ impl Evaluator {
         for stmt in program {
             match self.eval_statement(stmt, env) {
                 Some(Object::Return(obj)) => return Some(Object::Return(obj)),
-                Some(Object::Error(msg)) => panic!("{}", msg),
+                Some(Object::Error(msg)) => println!("{}", msg),
                 Some(Object::Empty) => continue,
                 Some(obj) => result = Some(obj),
                 None => {
@@ -99,8 +99,69 @@ impl Evaluator {
                 alternative,
             } => self.eval_if_expression(token, condition, consequence, alternative, env),
             Expression::Identifier(iden) => self.eval_identifier(iden, env),
-            _ => None,
+            Expression::FunctionCall {
+                token: _,
+                function,
+                arguments,
+            } => self.eval_function_call(function, arguments, env),
+            Expression::FunctionLiteral {
+                token: _,
+                parameters,
+                body,
+            } => Some(Object::Function {
+                parameters: parameters.clone(),
+                body: *body.clone(),
+                env: Env::extend(env.clone()),
+            }),
         }
+    }
+
+    fn eval_function_call(
+        &mut self,
+        function: &Expression,
+        arguments: &Vec<Expression>,
+        env: &mut Env,
+    ) -> Option<Object> {
+        let function = self.eval_expression(function, env)?;
+
+        let arguments = self.eval_expressions(arguments, env)?;
+
+        match function {
+            Object::Function {
+                parameters,
+                body,
+                env,
+            } => {
+                let mut extended_env = Env::extend(env);
+
+                for (i, param) in parameters.iter().enumerate() {
+                    extended_env.set(&param.value, arguments[i].clone());
+                }
+
+                let evaluated = self.eval_block_statement(&body, &mut extended_env)?;
+
+                match evaluated {
+                    Object::Return(obj) => Some(*obj),
+                    _ => Some(evaluated),
+                }
+            }
+            _ => Some(self.new_error("Use function call on functions")),
+        }
+    }
+
+    fn eval_expressions(
+        &mut self,
+        expressions: &Vec<Expression>,
+        env: &mut Env,
+    ) -> Option<Vec<Object>> {
+        let mut result = Vec::new();
+
+        for expr in expressions {
+            let evaluated = self.eval_expression(expr, env)?;
+            result.push(evaluated);
+        }
+
+        Some(result)
     }
 
     fn eval_identifier(&mut self, iden: &Identifier, env: &mut Env) -> Option<Object> {
@@ -236,6 +297,55 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+    #[test]
+    fn function_call_test() {
+        let tests = vec![
+            (
+                "let identity = fn(x) { x; }; identity(5);",
+                Object::Integer(5),
+            ),
+            (
+                "let identity = fn(x) { return x; }; identity(5);",
+                Object::Integer(5),
+            ),
+            (
+                "let double = fn(x) { x * 2; }; double(5);",
+                Object::Integer(10),
+            ),
+            (
+                "let add = fn(x, y) { x + y; }; add(5, 5);",
+                Object::Integer(10),
+            ),
+            (
+                "let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));",
+                Object::Integer(20),
+            ),
+            ("fn(x) { x; }(5)", Object::Integer(5)),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    assert_eq!(result, expected);
+                }
+            }
+        }
+    }
 
     #[test]
     fn let_env() {

@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Position {
     line: usize,
     col: usize,
@@ -27,7 +27,7 @@ impl fmt::Debug for Position {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     pub ttype: TokenType,
     pub literal: String,
