@@ -167,6 +167,17 @@ impl Evaluator {
                             return Some(Object::String(char.to_string()));
                         }
                     }
+                    (Object::Hash(hash), Object::String(key)) => {
+                        for (k, v) in hash {
+                            if let Object::String(k) = k {
+                                if k == key {
+                                    return Some(v);
+                                }
+                            }
+                        }
+
+                        return Some(Object::Null);
+                    }
                     _ => return Some(self.new_error("Use index expression on arrays or strings")),
                 }
             }
@@ -411,6 +422,66 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn test_hash_index() {
+        let tests = vec![
+            (
+                r#"
+                let myHash = {"one": 1, "two": 2};
+                myHash["one"]
+                "#,
+                Object::Integer(1),
+            ),
+            (
+                r#"
+                let myHash = {"one": 1, "two": 2};
+                myHash["two"]
+                "#,
+                Object::Integer(2),
+            ),
+            (
+                r#"
+                let myHash = {"one": 1, "two": 2};
+                myHash["three"]
+                "#,
+                Object::Null,
+            ),
+            (
+                r#"
+                let myHash = {"one": 1, "two": 2};
+                myHash["one"] + myHash["two"]
+                "#,
+                Object::Integer(3),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    println!("{} - {}", result, expected);
+                    assert_eq!(result, expected);
+                } else {
+                    panic!("No result");
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_hash_literal() {
