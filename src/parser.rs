@@ -55,6 +55,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
+        // Prefix
         let mut left = match self.current_token.ttype {
             TokenType::Ident => self.parse_identifier(),
             TokenType::String => self.parse_string_literal(),
@@ -63,6 +64,7 @@ impl Parser {
             TokenType::Keyword(KeywordType::True) | TokenType::Keyword(KeywordType::False) => {
                 self.parse_boolean()
             }
+            TokenType::LBrace => self.parse_hash_expr(),
             TokenType::LParen => self.parse_group_expr(),
             TokenType::LBracket => self.parse_array_literal(),
             TokenType::Keyword(KeywordType::If) => self.parse_if_expr(),
@@ -70,6 +72,7 @@ impl Parser {
             _ => return None,
         };
 
+        // Infix
         while self.peek_token.ttype != TokenType::Semicolon && precedence < self.peek_precedence() {
             self.next_token();
 
@@ -90,6 +93,35 @@ impl Parser {
         }
 
         left
+    }
+
+    fn parse_hash_expr(&mut self) -> Option<Expression> {
+        let mut pairs: Vec<(Expression, Expression)> = Vec::new();
+
+        while self.peek_token.ttype != TokenType::RBrace {
+            self.next_token();
+
+            let key = self.parse_expression(Precedence::Lowest).unwrap();
+
+            if !self.expect_peek(TokenType::Colon) {
+                return None;
+            }
+
+            self.next_token();
+            let value = self.parse_expression(Precedence::Lowest).unwrap();
+
+            pairs.push((key, value));
+
+            if self.peek_token.ttype != TokenType::RBrace && !self.expect_peek(TokenType::Comma) {
+                return None;
+            }
+        }
+
+        if !self.expect_peek(TokenType::RBrace) {
+            return None;
+        }
+
+        Some(Expression::Literal(Literal::Hash(pairs)))
     }
 
     fn parse_fn_call(&mut self, function: Expression) -> Option<Expression> {
@@ -271,6 +303,7 @@ impl Parser {
     }
 
     fn parse_block_statement(&mut self) -> BlockStatement {
+        self.next_token();
         let mut block = Vec::new();
 
         while self.current_token.ttype != TokenType::RBrace
@@ -461,6 +494,75 @@ mod test {
     use super::Parser;
     use crate::lexer::Lexer;
     use crate::parser::Statement;
+
+    #[test]
+    fn test_empty_hash() {
+        let input = String::from("{}");
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+
+        let program = p.parse_program();
+
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}, prgm: {:?}",
+                    program.len(),
+                    program
+                );
+            }
+            let stmt = &program[0];
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != "{}" {
+                        panic!("Expected value to be {{}}, got {}", value);
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_hash_literal() {
+        let input = String::from(r#"{"one": 1, "two": 2, "three": 3}"#);
+
+        let mut l = Lexer::new(input);
+        let tokens = l.gen_tokens();
+
+        let mut p = Parser::new(tokens);
+
+        let program = p.parse_program();
+
+        if let Some(program) = program {
+            if program.len() != 1 {
+                panic!(
+                    "Program does not contain 1 statement, got {}, prgm: {:?}",
+                    program.len(),
+                    program
+                );
+            }
+            let stmt = &program[0];
+            match stmt {
+                Statement::Expression { value, .. } => {
+                    if value.to_string() != r#"{one: 1, two: 2, three: 3}"# {
+                        panic!(
+                            "Expected value to be {{one: 1, two: 2, three: 3}}, got {}",
+                            value
+                        );
+                    }
+                }
+                _ => {
+                    panic!("Expected statement to be expression, got {:?}", stmt);
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_array_index() {

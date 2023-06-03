@@ -1,6 +1,6 @@
 use crate::lexer::Token;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,
@@ -12,12 +12,13 @@ impl std::fmt::Display for Identifier {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Literal {
     Integer(i64),
     Boolean(bool),
     String(String),
     Array(Vec<Expression>),
+    Hash(Vec<(Expression, Expression)>),
 }
 
 impl std::fmt::Display for Literal {
@@ -37,11 +38,22 @@ impl std::fmt::Display for Literal {
                 }
                 write!(f, "]")
             }
+            Literal::Hash(hash) => {
+                write!(f, "{{")?;
+                for (i, (key, value)) in hash.iter().enumerate() {
+                    if i == hash.len() - 1 {
+                        write!(f, "{}: {}", key, value)?;
+                    } else {
+                        write!(f, "{}: {}, ", key, value)?;
+                    }
+                }
+                write!(f, "}}")
+            }
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Expression {
     Identifier(Identifier),
     Literal(Literal),
@@ -138,7 +150,7 @@ impl std::fmt::Display for Expression {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Statement {
     Let {
         token: Token,

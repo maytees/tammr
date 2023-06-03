@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Position {
     line: usize,
     col: usize,
@@ -27,7 +27,7 @@ impl fmt::Debug for Position {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Token {
     pub ttype: TokenType,
     pub literal: String,
@@ -44,7 +44,7 @@ impl fmt::Debug for Token {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenType {
     Keyword(KeywordType),
     Ident,
@@ -56,6 +56,7 @@ pub enum TokenType {
     Div,
     Assign,
     NotEq,
+    Colon,
     Lt,
     Gt,
     Eq,
@@ -71,7 +72,7 @@ pub enum TokenType {
     Eof,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeywordType {
     Let,
     Return,
@@ -239,6 +240,11 @@ impl Lexer {
             ',' => Some(Token {
                 ttype: TokenType::Comma,
                 literal: String::from(","),
+                position: self.position.clone(),
+            }),
+            ':' => Some(Token {
+                ttype: TokenType::Colon,
+                literal: String::from(":"),
                 position: self.position.clone(),
             }),
             '"' => {

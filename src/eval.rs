@@ -81,7 +81,7 @@ impl Evaluator {
 
     fn eval_expression(&mut self, value: &Expression, env: &mut Env) -> Option<Object> {
         match value {
-            Expression::Literal(lit) => self.eval_literal(lit),
+            Expression::Literal(lit) => self.eval_literal(lit, env),
             Expression::Prefix {
                 token: _,
                 operator,
@@ -359,7 +359,7 @@ impl Evaluator {
         }
     }
 
-    fn eval_literal(&mut self, lit: &Literal) -> Option<Object> {
+    fn eval_literal(&mut self, lit: &Literal, env: &mut Env) -> Option<Object> {
         match lit {
             Literal::Integer(int) => Some(Object::Integer(*int)),
             Literal::Boolean(bool) => Some(Object::Boolean(*bool)),
@@ -368,13 +368,37 @@ impl Evaluator {
                 let mut result = Vec::new();
 
                 for expr in array {
-                    let evaluated = self.eval_expression(expr, &mut Env::new())?;
+                    let evaluated = self.eval_expression(expr, env)?;
                     result.push(evaluated);
                 }
 
                 Some(Object::Array(result))
             }
+            Literal::Hash(pairs) => self.eval_hash_literal(pairs.to_vec(), env),
         }
+    }
+
+    fn eval_hash_literal(
+        &mut self,
+        pairs: Vec<(Expression, Expression)>,
+        env: &mut Env,
+    ) -> Option<Object> {
+        let mut hash: Vec<(Object, Object)> = Vec::new();
+
+        for (k, v) in pairs {
+            let key = self.eval_expression(&k, env)?;
+
+            match key {
+                Object::String(_) => {}
+                _ => return Some(self.new_error("Hash keys must be strings")),
+            };
+
+            let value = self.eval_expression(&v, &mut Env::new())?;
+
+            hash.push((key, value));
+        }
+
+        Some(Object::Hash(hash))
     }
 }
 
@@ -387,6 +411,50 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn test_hash_literal() {
+        let tests = vec![(
+            r#"
+                {
+                    "one": 10 - 9,
+                    "three": 6 / 2,
+                }
+                "#,
+            vec![
+                (Object::String("one".to_string()), Object::Integer(1)),
+                (Object::String("three".to_string()), Object::Integer(3)),
+            ],
+        )];
+
+        for (input, object) in tests {
+            let mut l = Lexer::new(input.to_string());
+            let tokens = l.gen_tokens();
+
+            let mut parser = Parser::new(tokens);
+            let program: Option<Program> = parser.parse_program();
+
+            let mut evaluator = Evaluator::new();
+
+            if let Some(program) = program {
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    match result {
+                        Object::Hash(hash) => {
+                            for (key, value) in hash.iter() {
+                                for (expected_key, expected_value) in object.iter() {
+                                    if key == expected_key {
+                                        assert_eq!(value, expected_value);
+                                    }
+                                }
+                            }
+                        }
+                        _ => panic!("Expected hash, got {}", result),
+                    }
+                }
+            }
+        }
+    }
+
     #[test]
     fn test_array_index() {
         let tests = vec![

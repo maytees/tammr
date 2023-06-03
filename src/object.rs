@@ -1,8 +1,7 @@
 use crate::ast::{BlockStatement, Identifier};
 use crate::env::Env;
 
-#[derive(PartialEq, Debug, Clone)]
-
+#[derive(PartialEq, Debug, Clone, Eq)]
 pub enum Object {
     Integer(i64),
     Boolean(bool),
@@ -18,6 +17,7 @@ pub enum Object {
     String(String),
     BuiltinFunction(fn(Vec<Object>) -> Object),
     Array(Vec<Object>),
+    Hash(Vec<(Object, Object)>),
 }
 
 impl std::fmt::Display for Object {
@@ -52,6 +52,17 @@ impl std::fmt::Display for Object {
                     }
                 }
                 write!(f, "]")
+            }
+            Object::Hash(hash) => {
+                write!(f, "{{")?;
+                for (i, (key, value)) in hash.iter().enumerate() {
+                    if i == hash.len() - 1 {
+                        write!(f, "{}: {}", key, value)?;
+                    } else {
+                        write!(f, "{}: {}, ", key, value)?;
+                    }
+                }
+                write!(f, "}}")
             }
         }
     }
