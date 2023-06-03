@@ -17,6 +17,7 @@ pub enum Literal {
     Integer(i64),
     Boolean(bool),
     String(String),
+    Array(Vec<Expression>),
 }
 
 impl std::fmt::Display for Literal {
@@ -25,6 +26,17 @@ impl std::fmt::Display for Literal {
             Literal::Integer(int) => write!(f, "{}", int),
             Literal::Boolean(bool) => write!(f, "{}", bool),
             Literal::String(string) => write!(f, "{}", string),
+            Literal::Array(array) => {
+                write!(f, "[")?;
+                for (i, expr) in array.iter().enumerate() {
+                    if i == array.len() - 1 {
+                        write!(f, "{}", expr)?;
+                    } else {
+                        write!(f, "{}, ", expr)?;
+                    }
+                }
+                write!(f, "]")
+            }
         }
     }
 }
@@ -59,6 +71,11 @@ pub enum Expression {
         token: Token,              // (
         function: Box<Expression>, // Identifier or FunctionLiteral
         arguments: Vec<Expression>,
+    },
+    IndexExpression {
+        token: Token, // [
+        left: Box<Expression>,
+        index: Box<Expression>,
     },
 }
 
@@ -116,6 +133,7 @@ impl std::fmt::Display for Expression {
                 }
                 write!(f, ")")
             }
+            Expression::IndexExpression { left, index, .. } => write!(f, "({}[{}])", left, index),
         }
     }
 }

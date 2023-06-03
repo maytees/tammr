@@ -114,7 +114,65 @@ impl Evaluator {
                 body: *body.clone(),
                 env: Env::extend(env.clone()),
             }),
+            Expression::IndexExpression {
+                token: _,
+                left,
+                index,
+            } => self.eval_index_expression(left, index, env),
         }
+    }
+
+    fn eval_index_expression(
+        &mut self,
+        left: &Expression,
+        index: &Expression,
+        env: &mut Env,
+    ) -> Option<Object> {
+        let left = self.eval_expression(left, env);
+        let index = self.eval_expression(index, env);
+
+        if let Some(left) = left {
+            if let Some(index) = index {
+                match (left, index) {
+                    (Object::Array(arr), Object::Integer(int)) => {
+                        if int <= -1 {
+                            if let Some(item) =
+                                arr.iter().nth_back((int.unsigned_abs() - 1) as usize)
+                            {
+                                return Some(item.clone());
+                            }
+                        }
+
+                        if int >= arr.len() as i64 {
+                            return Some(Object::Null);
+                        }
+
+                        return Some(arr[int as usize].clone());
+                    }
+                    (Object::String(str), Object::Integer(int)) => {
+                        // Is negative, go backwards. i.e -1
+                        if int <= -1 {
+                            if let Some(char) =
+                                str.chars().nth_back((int.unsigned_abs() - 1) as usize)
+                            {
+                                return Some(Object::String(char.to_string()));
+                            }
+                        }
+
+                        if int >= str.len() as i64 {
+                            return Some(Object::Null);
+                        }
+
+                        if let Some(char) = str.chars().nth(int as usize) {
+                            return Some(Object::String(char.to_string()));
+                        }
+                    }
+                    _ => return Some(self.new_error("Use index expression on arrays or strings")),
+                }
+            }
+        }
+
+        None
     }
 
     fn eval_function_call(
@@ -306,6 +364,16 @@ impl Evaluator {
             Literal::Integer(int) => Some(Object::Integer(*int)),
             Literal::Boolean(bool) => Some(Object::Boolean(*bool)),
             Literal::String(string) => Some(Object::String(string.clone())),
+            Literal::Array(array) => {
+                let mut result = Vec::new();
+
+                for expr in array {
+                    let evaluated = self.eval_expression(expr, &mut Env::new())?;
+                    result.push(evaluated);
+                }
+
+                Some(Object::Array(result))
+            }
         }
     }
 }
@@ -319,6 +387,88 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+    #[test]
+    fn test_array_index() {
+        let tests = vec![
+            ("[1, 2, 3][0]", Object::Integer(1)),
+            ("[1, 2, 3][1]", Object::Integer(2)),
+            ("[1, 2, 3][2]", Object::Integer(3)),
+            ("let i = 0; [1][i];", Object::Integer(1)),
+            ("[1, 2, 3][1 + 1];", Object::Integer(3)),
+            ("let myArray = [1, 2, 3]; myArray[2];", Object::Integer(3)),
+            (
+                "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+                Object::Integer(6),
+            ),
+            (
+                "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+                Object::Integer(2),
+            ),
+            ("[1, 2, 3][3]", Object::Null),
+            ("[1, 2, 3][-1]", Object::Integer(3)),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    assert_eq!(result, expected);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_array_literal() {
+        let test = vec![
+            (
+                "[1, 2 * 2, 3 + 3]",
+                vec![Object::Integer(1), Object::Integer(4), Object::Integer(6)],
+            ),
+            (
+                "[1, 2, 3]",
+                vec![Object::Integer(1), Object::Integer(2), Object::Integer(3)],
+            ),
+            ("[]", vec![]),
+        ];
+
+        for (input, expected) in test {
+            let mut l = Lexer::new(input.to_string());
+            let tokens = l.gen_tokens();
+
+            let mut parser = Parser::new(tokens);
+            let program: Option<Program> = parser.parse_program();
+
+            if let Some(program) = program {
+                let mut evaluator = Evaluator::new();
+
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    match result {
+                        Object::Array(arr) => {
+                            for (i, obj) in arr.iter().enumerate() {
+                                assert_eq!(*obj, expected[i]);
+                            }
+                        }
+                        _ => panic!("Expected array, got {}", result),
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_builtin_len() {

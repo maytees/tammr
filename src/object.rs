@@ -17,6 +17,7 @@ pub enum Object {
     },
     String(String),
     BuiltinFunction(fn(Vec<Object>) -> Object),
+    Array(Vec<Object>),
 }
 
 impl std::fmt::Display for Object {
@@ -41,6 +42,17 @@ impl std::fmt::Display for Object {
             }
             Object::String(string) => write!(f, "{}", string),
             Object::BuiltinFunction(_) => write!(f, "builtin function"),
+            Object::Array(array) => {
+                write!(f, "[")?;
+                for (i, obj) in array.iter().enumerate() {
+                    if i == array.len() - 1 {
+                        write!(f, "{}", obj)?;
+                    } else {
+                        write!(f, "{}, ", obj)?;
+                    }
+                }
+                write!(f, "]")
+            }
         }
     }
 }
