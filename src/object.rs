@@ -16,6 +16,7 @@ pub enum Object {
         env: Env,
     },
     String(String),
+    BuiltinFunction(fn(Vec<Object>) -> Object),
 }
 
 impl std::fmt::Display for Object {
@@ -39,6 +40,7 @@ impl std::fmt::Display for Object {
                 write!(f, "fn({}) {{\n{:?}\n}}", params, body)
             }
             Object::String(string) => write!(f, "{}", string),
+            Object::BuiltinFunction(_) => write!(f, "builtin function"),
         }
     }
 }

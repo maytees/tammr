@@ -64,6 +64,8 @@ pub enum TokenType {
     RParen,
     LBrace,
     RBrace,
+    LBracket,
+    RBracket,
     Comma,
     String,
     Eof,
@@ -222,6 +224,16 @@ impl Lexer {
             '}' => Some(Token {
                 ttype: TokenType::RBrace,
                 literal: String::from("}"),
+                position: self.position.clone(),
+            }),
+            '[' => Some(Token {
+                ttype: TokenType::LBracket,
+                literal: String::from("["),
+                position: self.position.clone(),
+            }),
+            ']' => Some(Token {
+                ttype: TokenType::RBracket,
+                literal: String::from("]"),
                 position: self.position.clone(),
             }),
             ',' => Some(Token {

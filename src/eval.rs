@@ -1,4 +1,5 @@
 use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
+use crate::builtin;
 use crate::env::Env;
 use crate::lexer::Token;
 use crate::object::Object;
@@ -145,6 +146,7 @@ impl Evaluator {
                     _ => Some(evaluated),
                 }
             }
+            Object::BuiltinFunction(func) => Some(func(arguments)),
             _ => Some(self.new_error("Use function call on functions")),
         }
     }
@@ -169,6 +171,10 @@ impl Evaluator {
 
         if let Some(value) = value {
             return Some(value);
+        }
+
+        if builtin::builtins().contains_key(&iden.value) {
+            return Some(builtin::builtins()[&iden.value].clone());
         }
 
         Some(self.new_error(&format!("Identifier not found: {}", iden.value)))
@@ -313,6 +319,46 @@ mod test {
     use crate::parser::Parser;
 
     use super::Evaluator;
+
+    #[test]
+    fn test_builtin_len() {
+        let tests = vec![
+            ("len(\"\")", Object::Integer(0)),
+            ("len(\"four\")", Object::Integer(4)),
+            ("len(\"hello world\")", Object::Integer(11)),
+            (
+                "len(1)",
+                Object::Error("Argument to `len` not supported, got Integer".to_string()),
+            ),
+            (
+                "len(\"one\", \"two\")",
+                Object::Error("Wrong number of arguments. Got 2, expected 1".to_string()),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program, &mut Env::new()) {
+                    // assert that result is equal to expected
+                    assert_eq!(result, expected);
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_string_concatenation() {

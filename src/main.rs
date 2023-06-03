@@ -3,6 +3,7 @@ use std::io::{stdout, Write};
 use crate::{ast::Program, env::Env, eval::Evaluator};
 
 mod ast;
+mod builtin;
 mod env;
 mod eval;
 mod lexer;
