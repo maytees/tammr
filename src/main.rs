@@ -44,7 +44,11 @@ fn main() {
             let mut evaluator = Evaluator::new();
 
             if let Some(result) = evaluator.eval(&program, &mut env) {
-                println!("{}", result);
+                match result {
+                    object::Object::Null => println!("null"),
+                    object::Object::Error(msg) => println!("Error: {}", msg),
+                    _ => (),
+                };
             }
         }
     }

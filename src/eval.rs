@@ -1,4 +1,4 @@
-use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
+use crate::ast::{Expression, Identifier, Literal, Program, Statement};
 use crate::builtin;
 use crate::env::Env;
 use crate::lexer::Token;
@@ -18,7 +18,6 @@ impl Evaluator {
             match self.eval_statement(stmt, env) {
                 Some(Object::Return(obj)) => return Some(Object::Return(obj)),
                 Some(Object::Error(msg)) => println!("{}", msg),
-                Some(Object::Empty) => continue,
                 Some(obj) => result = Some(obj),
                 None => {
                     return Some(
@@ -35,23 +34,31 @@ impl Evaluator {
         Object::Error(msg.to_string())
     }
 
-    fn eval_block_statement(&mut self, stmts: &BlockStatement, env: &mut Env) -> Option<Object> {
-        let mut result: Option<Object> = None;
+    // If there are future problems with returning, look at this..
+    // fn eval_block_statement(&mut self, stmts: &BlockStatement, env: &mut Env) -> Option<Object> {
+    //     let mut result: Option<Object> = None;
 
-        for stmt in stmts {
-            match self.eval_statement(stmt, env) {
-                Some(Object::Return(obj)) => return Some(Object::Return(obj)),
-                Some(Object::Error(msg)) => return Some(Object::Error(msg)),
-                Some(Object::Empty) => continue,
-                Some(obj) => result = Some(obj),
-                None => {
-                    return Some(self.new_error(&format!("Cannot evaluate statement: {:?}", stmt)))
-                }
-            }
-        }
+    //     for stmt in stmts {
+    //         match self.eval_statement(stmt, env) {
+    //             Some(Object::Return(obj)) => return Some(Object::Return(obj)),
+    //             Some(Object::Error(msg)) => println!("{}", msg),
+    //             Some(Object::Empty) => continue,
+    //             Some(Object::Function {
+    //                 parameters: _,
+    //                 body: _,
+    //                 env: _,
+    //             }) => continue,
+    //             Some(obj) => result = Some(obj),
+    //             None => {
+    //                 return Some(
+    //                     self.new_error(&format!("Could not evaluate statement blo: {:?}", stmt)),
+    //                 )
+    //             }
+    //         }
+    //     }
 
-        result
-    }
+    //     result
+    // }
 
     fn eval_statement(&mut self, stmt: &Statement, env: &mut Env) -> Option<Object> {
         match stmt {
@@ -208,7 +215,7 @@ impl Evaluator {
                     extended_env.set(&param.value, arguments[i].clone());
                 }
 
-                let evaluated = self.eval_block_statement(&body, &mut extended_env)?;
+                let evaluated = self.eval(&body, &mut extended_env)?;
 
                 match evaluated {
                     Object::Return(obj) => Some(*obj),
@@ -262,9 +269,9 @@ impl Evaluator {
         match condition {
             Object::Boolean(bool) => {
                 if bool {
-                    self.eval_block_statement(consequence, env)
+                    self.eval(consequence, env)
                 } else if let Some(alt) = alternative {
-                    self.eval_block_statement(alt, env)
+                    self.eval(alt, env)
                 } else {
                     Some(Object::Null)
                 }
@@ -305,6 +312,8 @@ impl Evaluator {
     ) -> Option<Object> {
         match operator {
             "+" => Some(Object::String(format!("{}{}", left, right))),
+            "==" => Some(Object::Boolean(left == right)),
+            "!=" => Some(Object::Boolean(left != right)),
             _ => Some(self.new_error(&format!("Invalid operator: {}", operator))),
         }
     }

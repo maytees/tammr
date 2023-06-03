@@ -55,5 +55,18 @@ pub fn builtins() -> HashMap<String, Object> {
         }),
     );
 
+    map.insert(
+        "print".to_string(),
+        Object::BuiltinFunction(|args| {
+            println!(
+                "{}",
+                args.iter()
+                    .map(|arg| format!("{} ", arg))
+                    .collect::<String>()
+            );
+            Object::Empty
+        }),
+    );
+
     map
 }

@@ -276,7 +276,7 @@ impl Lexer {
     fn gen_ident(&mut self) -> Token {
         let mut ident = String::new();
 
-        while self.current.is_alphabetic() {
+        while self.current.is_alphabetic() || self.current == '_' {
             ident.push(self.current);
             self.advance();
         }
