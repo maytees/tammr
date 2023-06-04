@@ -1,0 +1,17 @@
+let name = "Matees";
+
+let check_name = fn() {
+    print(name)
+}
+
+check_name();
+
+name = "Joe";
+
+check_name();
+
+let add = fn(x, y) {
+    return x + y;
+}
+
+print(add(2, 2));

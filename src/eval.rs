@@ -73,7 +73,28 @@ impl Evaluator {
                 env.set(&name.value, value);
                 Some(Object::Empty)
             }
+            Statement::ReAssign {
+                token: _,
+                name,
+                value,
+            } => self.eval_reassign(name, value, env),
         }
+    }
+
+    fn eval_reassign(
+        &mut self,
+        name: &Identifier,
+        value: &Expression,
+        env: &mut Env,
+    ) -> Option<Object> {
+        let value = self.eval_expression(value, env)?;
+
+        if env.get(&name.value).is_some() {
+            env.set(&name.value, value);
+            return Some(Object::Empty);
+        }
+
+        Some(self.new_error(&format!("Identifier not found: {}", name.value)))
     }
 
     fn eval_return(&mut self, value: &Expression, env: &mut Env) -> Option<Object> {

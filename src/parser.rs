@@ -50,8 +50,39 @@ impl Parser {
         match self.current_token.ttype {
             TokenType::Keyword(KeywordType::Let) => self.parse_let_statement(),
             TokenType::Keyword(KeywordType::Return) => self.parse_return_statement(),
+            TokenType::Ident => {
+                if self.peek_token.ttype == TokenType::Assign {
+                    self.parse_reassign_statement()
+                } else {
+                    self.parse_expression_statement()
+                }
+            }
             _ => self.parse_expression_statement(),
         }
+    }
+    fn parse_reassign_statement(&mut self) -> Option<Statement> {
+        let name = Identifier {
+            token: self.current_token.clone(),
+            value: self.current_token.literal.clone(),
+        };
+
+        if !self.expect_peek(TokenType::Assign) {
+            return None;
+        }
+
+        self.next_token();
+
+        let value = self.parse_expression(Precedence::Lowest).unwrap();
+
+        if self.peek_token.ttype == TokenType::Semicolon {
+            self.next_token();
+        }
+
+        Some(Statement::ReAssign {
+            token: self.current_token.clone(),
+            name,
+            value,
+        })
     }
 
     fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {

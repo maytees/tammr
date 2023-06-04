@@ -157,6 +157,11 @@ pub enum Statement {
         name: Identifier,
         value: Expression,
     },
+    ReAssign {
+        token: Token,
+        name: Identifier,
+        value: Expression,
+    },
     Return {
         token: Token,
         value: Expression,
@@ -175,6 +180,9 @@ impl std::fmt::Debug for Statement {
             }
             Statement::Return { value, .. } => write!(f, "return {};", value),
             Statement::Expression { value, .. } => write!(f, "{}", value),
+            Statement::ReAssign { name, value, .. } => {
+                write!(f, "reassign {} = {}", name, value)
+            }
         }
     }
 }
