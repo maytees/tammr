@@ -8,7 +8,7 @@ pub fn builtins() -> HashMap<String, Object> {
     // Len
     map.insert(
         "len".to_string(),
-        Object::BuiltinFunction(|args| {
+        Object::BuiltinFunction(|args, env| {
             if args.len() != 1 {
                 return Object::Error(format!(
                     "Wrong number of arguments. Got {}, expected 1",
@@ -26,7 +26,7 @@ pub fn builtins() -> HashMap<String, Object> {
 
     map.insert(
         "first".to_string(),
-        Object::BuiltinFunction(|args| {
+        Object::BuiltinFunction(|args, env| {
             if args.len() != 1 {
                 return Object::Error(format!(
                     "Wrong number of arguments. Got {}, expected 1",
@@ -57,7 +57,7 @@ pub fn builtins() -> HashMap<String, Object> {
 
     map.insert(
         "print".to_string(),
-        Object::BuiltinFunction(|args| {
+        Object::BuiltinFunction(|args, env| {
             println!(
                 "{}",
                 args.iter()
@@ -65,6 +65,27 @@ pub fn builtins() -> HashMap<String, Object> {
                     .collect::<String>()
             );
             Object::Empty
+        }),
+    );
+
+    map.insert(
+        "push".to_string(),
+        Object::BuiltinFunction(|args, env| {
+            if args.len() != 2 {
+                return Object::Error(format!(
+                    "Wrong number of arguments. Got {}, expected 2",
+                    args.len()
+                ));
+            }
+
+            match &args[0] {
+                Object::Array(array) => {
+                    let mut new_array = array.clone();
+                    new_array.push(args[1].clone());
+                    Object::Array(new_array)
+                }
+                _ => Object::Error(format!("Argument to `push` must be ARRAY, got {}", args[0])),
+            }
         }),
     );
 

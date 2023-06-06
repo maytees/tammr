@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::ast::{BlockStatement, Identifier};
 use crate::env::Env;
 
@@ -12,10 +15,10 @@ pub enum Object {
     Function {
         parameters: Vec<Identifier>,
         body: BlockStatement,
-        env: Env,
+        env: Rc<RefCell<Env>>,
     },
     String(String),
-    BuiltinFunction(fn(Vec<Object>) -> Object),
+    BuiltinFunction(fn(Vec<Object>, Rc<RefCell<Env>>) -> Object),
     Array(Vec<Object>),
     Hash(Vec<(Object, Object)>),
 }

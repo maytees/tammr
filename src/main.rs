@@ -31,12 +31,10 @@ fn run_file(file: &String) {
     let mut parser = parser::Parser::new(tokens);
     let program: Option<Program> = parser.parse_program();
 
-    let mut env = Env::new();
-
     if let Some(program) = program {
         let mut evaluator = Evaluator::new();
 
-        if let Some(result) = evaluator.eval(&program, &mut env) {
+        if let Some(result) = evaluator.eval(&program) {
             match result {
                 object::Object::Null => (),
                 object::Object::Error(msg) => println!("Error: {}", msg),
@@ -47,8 +45,6 @@ fn run_file(file: &String) {
 }
 
 fn repl() {
-    let mut env = Env::new();
-
     loop {
         print!(">> ");
         let mut input = String::new();
@@ -78,7 +74,7 @@ fn repl() {
 
             let mut evaluator = Evaluator::new();
 
-            if let Some(result) = evaluator.eval(&program, &mut env) {
+            if let Some(result) = evaluator.eval(&program) {
                 match result {
                     object::Object::Null => println!("null"),
                     object::Object::Error(msg) => println!("Error: {}", msg),

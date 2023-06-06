@@ -1,17 +1,7 @@
-let name = "Matees";
+let list = [4];
 
-let check_name = fn() {
-    print(name)
-}
+print(list)
 
-check_name();
+print(push(list, 3))
 
-name = "Joe";
-
-check_name();
-
-let add = fn(x, y) {
-    return x + y;
-}
-
-print(add(2, 2));
+print(list)
