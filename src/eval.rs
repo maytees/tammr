@@ -1,12 +1,11 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
+use crate::builtin;
 use crate::env::Env;
 use crate::lexer::Token;
 use crate::object::Object;
-use crate::{builtin, object};
 
 pub struct Evaluator {
     env: Rc<RefCell<Env>>,
@@ -208,7 +207,7 @@ impl Evaluator {
     fn eval_function_call(
         &mut self,
         function: &Expression,
-        arguments: &Vec<Expression>,
+        arguments: &[Expression],
     ) -> Option<Object> {
         let function = self.eval_expression(function)?;
 
@@ -241,12 +240,12 @@ impl Evaluator {
                     object
                 }
             }
-            Object::BuiltinFunction(func) => Some(func(arguments, self.env.clone())),
+            Object::BuiltinFunction(func) => Some(func(arguments)),
             _ => Some(self.new_error("Not a function")),
         }
     }
 
-    fn eval_expressions(&mut self, expressions: &Vec<Expression>) -> Option<Vec<Object>> {
+    fn eval_expressions(&mut self, expressions: &[Expression]) -> Option<Vec<Object>> {
         Some(
             expressions
                 .iter()

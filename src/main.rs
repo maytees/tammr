@@ -1,6 +1,6 @@
 use std::io::{stdout, Write};
 
-use crate::{ast::Program, env::Env, eval::Evaluator};
+use crate::{ast::Program, eval::Evaluator};
 
 mod ast;
 mod builtin;

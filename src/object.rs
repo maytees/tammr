@@ -18,7 +18,7 @@ pub enum Object {
         env: Rc<RefCell<Env>>,
     },
     String(String),
-    BuiltinFunction(fn(Vec<Object>, Rc<RefCell<Env>>) -> Object),
+    BuiltinFunction(fn(Vec<Object>) -> Object),
     Array(Vec<Object>),
     Hash(Vec<(Object, Object)>),
 }

@@ -8,7 +8,7 @@ pub fn builtins() -> HashMap<String, Object> {
     // Len
     map.insert(
         "len".to_string(),
-        Object::BuiltinFunction(|args, env| {
+        Object::BuiltinFunction(|args| {
             if args.len() != 1 {
                 return Object::Error(format!(
                     "Wrong number of arguments. Got {}, expected 1",
@@ -26,7 +26,7 @@ pub fn builtins() -> HashMap<String, Object> {
 
     map.insert(
         "first".to_string(),
-        Object::BuiltinFunction(|args, env| {
+        Object::BuiltinFunction(|args| {
             if args.len() != 1 {
                 return Object::Error(format!(
                     "Wrong number of arguments. Got {}, expected 1",
@@ -57,7 +57,7 @@ pub fn builtins() -> HashMap<String, Object> {
 
     map.insert(
         "print".to_string(),
-        Object::BuiltinFunction(|args, env| {
+        Object::BuiltinFunction(|args| {
             println!(
                 "{}",
                 args.iter()
@@ -70,7 +70,7 @@ pub fn builtins() -> HashMap<String, Object> {
 
     map.insert(
         "push".to_string(),
-        Object::BuiltinFunction(|args, env| {
+        Object::BuiltinFunction(|args| {
             if args.len() != 2 {
                 return Object::Error(format!(
                     "Wrong number of arguments. Got {}, expected 2",
