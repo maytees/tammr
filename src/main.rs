@@ -11,8 +11,6 @@ mod object;
 mod parser;
 
 fn main() {
-    println!("Welcome to the Monkey language repl!");
-
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() > 1 {

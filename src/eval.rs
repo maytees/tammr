@@ -838,9 +838,8 @@ mod test {
                 if let Some(result) = evaluator.eval(&program) {
                     // assert that result is equal to expected
                     match result {
-                        Object::Return(obj) => {
-                            assert_eq!(*obj, expected);
-                        }
+                        Object::Integer(int) => assert_eq!(Object::Integer(int), expected),
+                        Object::Return(obj) => assert_eq!(*obj, expected),
                         _ => panic!("Expected {}, got {}", expected, result),
                     }
                 }

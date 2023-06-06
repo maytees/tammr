@@ -1,7 +1,4 @@
-let list = [4];
+let x = fn() {
+}
 
-print(list)
-
-print(push(list, 3))
-
-print(list)
+print(x())
