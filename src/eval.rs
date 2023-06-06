@@ -433,6 +433,52 @@ mod test {
     use super::Evaluator;
 
     #[test]
+    fn test_dot_notation() {
+        let tests = vec![
+            (
+                r#"
+                let person = {"name": "Joe"};
+                person.name
+                "#,
+                Object::String("Joe".to_string()),
+            ),
+            (
+                r#"
+            let person = {"name": "Joe", "age": 90};
+            person.age
+            "#,
+                Object::Integer(90),
+            ),
+        ];
+
+        for (input, expected) in tests {
+            // create new lexer with input
+            let mut l = Lexer::new(input.to_string());
+            // generate tokens from lexer
+            let tokens = l.gen_tokens();
+
+            // create new parser with tokens
+            let mut parser = Parser::new(tokens);
+            // parse program from parser
+            let program: Option<Program> = parser.parse_program();
+
+            // if program exists
+            if let Some(program) = program {
+                // create new evaluator
+                let mut evaluator = Evaluator::new();
+                // evaluate program
+                if let Some(result) = evaluator.eval(&program) {
+                    // assert that result is equal to expected
+                    println!("{} - {}", result, expected);
+                    assert_eq!(result, expected);
+                } else {
+                    panic!("No result");
+                }
+            }
+        }
+    }
+
+    #[test]
     fn test_hash_index() {
         let tests = vec![
             (
