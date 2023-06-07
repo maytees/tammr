@@ -105,7 +105,7 @@ impl Lexer {
         let mut tokens = Vec::new();
 
         while self.current != '\0' {
-            if self.current == ' ' || self.current == '\n' {
+            if self.current.is_whitespace() {
                 self.advance();
                 continue;
             }
@@ -128,7 +128,10 @@ impl Lexer {
                 continue;
             }
 
-            panic!("Unknown token: {}", self.current);
+            panic!(
+                "Unknown token: {} ascci code: {}",
+                self.current, self.current as u8
+            );
         }
 
         tokens.push(Token {
