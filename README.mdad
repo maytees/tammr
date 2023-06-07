@@ -132,7 +132,7 @@ end
 exit loopName                // loopName - identifier
 ```
 
-To exit a loop, you have to put in `Exit {loop name}` inside the loop, loop name is required due to cases of nested loops (`inspired by Rust 🙂`).
+To exit a loop, you have to put in `exit {loop name}` inside the loop, loop name is required due to cases of nested loops (`inspired by Rust 🙂`).
 
 You can add If, if you want to check a condition before repeating; if you do not put a condition then you are creating an infinite loop (`unless if you add an exit of course`).
 
