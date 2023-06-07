@@ -144,7 +144,7 @@ Linking will be something that will be worked on later, as it is not as importan
 import "./path/to/file.tmr" as marker   // content in "" is a path, marker is an identifier
 
 doSomething()     // Function in the marker file
-varInMarker = 50 // Variable in the marker file
+let varInMarker = 50 // Variable in the marker file
 
 OR
 
@@ -163,7 +163,7 @@ Now that we’re done with the *“basic”* things, let’s move on to the *“
 - `float`
 - `boolean`
 - `arr`
-- `file`
+- `module`
 - `hash`
 
 Now, lets explain each one
@@ -173,7 +173,8 @@ Now, lets explain each one
 - `float` is a number, specifically, a number with decimals, or no decimals, though defining a float requires a decimal
 - `boolean` is simple, it is either `True` or `False`, can also be `0` or `1`
 - `arr` is an array (more on that later)
-- `file` is a file, it is the variable that a file gets put into when using `Import as`
+- `module` probably a file, it is the variable that a file gets put into when using `Import as`
+- `hash` key value, like json, or dict in python.
 
 ## Blocks
 
