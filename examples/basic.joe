@@ -1,4 +1,3 @@
-let x = fn() {
-}
-
-print(x())
+let name="tammar";
+let last_name="ajam";
+print(name, last_name);
