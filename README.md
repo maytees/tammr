@@ -5,7 +5,7 @@
 The goal of this grammar is to be simple and concise.
 
 ## Keywords
-
+- `let`
 - `function`
 - `if`
 - `else`
@@ -37,11 +37,11 @@ Once again, the point of this language is to be simple, so creating variables is
 Creating a `variable`
 
 ```jsx
-type name = value
+let type name = value
 
 OR
 
-name = value
+let name = value
 ```
 
 Some things to take away from this: 
