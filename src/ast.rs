@@ -89,6 +89,11 @@ pub enum Expression {
         left: Box<Expression>,
         index: Box<Expression>,
     },
+    DotNotation {
+        token: Token, // .
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
 }
 
 impl std::fmt::Display for Expression {
@@ -146,6 +151,7 @@ impl std::fmt::Display for Expression {
                 write!(f, ")")
             }
             Expression::IndexExpression { left, index, .. } => write!(f, "({}[{}])", left, index),
+            Expression::DotNotation { left, right, .. } => write!(f, "({}.{})", left, right),
         }
     }
 }

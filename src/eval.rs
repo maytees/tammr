@@ -142,6 +142,7 @@ impl Evaluator {
                 left,
                 index,
             } => self.eval_index_expression(left, index),
+            _ => None,
         }
     }
 

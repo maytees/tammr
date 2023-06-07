@@ -1,4 +1,1 @@
-let x = fn() {
-}
 
-print(x())

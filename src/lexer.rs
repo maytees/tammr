@@ -68,6 +68,7 @@ pub enum TokenType {
     LBracket,
     RBracket,
     Comma,
+    Period,
     String,
     Eof,
 }
@@ -158,6 +159,11 @@ impl Lexer {
             '*' => Some(Token {
                 ttype: TokenType::Mul,
                 literal: String::from("*"),
+                position: self.position.clone(),
+            }),
+            '.' => Some(Token {
+                ttype: TokenType::Period,
+                literal: String::from("."),
                 position: self.position.clone(),
             }),
             '/' => Some(Token {
