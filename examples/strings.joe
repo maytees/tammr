@@ -2,3 +2,4 @@ let name = "dell wyse laptop";
 
 print(name)
 print(name.chars)
+print(name.bytes)

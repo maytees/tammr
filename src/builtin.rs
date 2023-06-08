@@ -17,11 +17,22 @@ fn string_to_array(string: &str) -> Object {
     Object::Array(arr)
 }
 
+fn string_to_byte_array(string: &str) -> Object {
+    let mut arr: Vec<Object> = Vec::new();
+
+    for char in string.chars() {
+        arr.push(Object::Integer((char as u8) as i64))
+    }
+
+    Object::Array(arr)
+}
+
 pub fn dot_str_builtins(string: &str, kind: DotBuiltinKind) -> Option<Object> {
     match kind {
         DotBuiltinKind::Property(name) => match name.as_str() {
             "length" => Some(Object::Integer(string.len() as i64)),
             "chars" => Some(string_to_array(string)),
+            "bytes" => Some(string_to_byte_array(string)),
             _ => Some(Object::Error(format!("No property named {}", name))),
         },
     }
