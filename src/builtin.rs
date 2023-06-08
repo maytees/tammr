@@ -2,6 +2,31 @@ use std::collections::HashMap;
 
 use crate::object::Object;
 
+// will implement functions later
+pub enum DotBuiltinKind {
+    Property(String),
+}
+
+fn string_to_array(string: &str) -> Object {
+    let mut arr: Vec<Object> = Vec::new();
+
+    for char in string.chars() {
+        arr.push(Object::String(char.to_string()))
+    }
+
+    Object::Array(arr)
+}
+
+pub fn dot_str_builtins(string: &str, kind: DotBuiltinKind) -> Option<Object> {
+    match kind {
+        DotBuiltinKind::Property(name) => match name.as_str() {
+            "length" => Some(Object::Integer(string.len() as i64)),
+            "chars" => Some(string_to_array(string)),
+            _ => Some(Object::Error(format!("No property named {}", name))),
+        },
+    }
+}
+
 pub fn builtins() -> HashMap<String, Object> {
     let mut map = HashMap::new();
 

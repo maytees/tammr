@@ -1,0 +1,4 @@
+let name = "dell wyse laptop";
+
+print(name)
+print(name.chars)

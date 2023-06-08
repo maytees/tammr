@@ -145,6 +145,14 @@ impl Parser {
         }
     }
 
+    fn parse_fn_call(&mut self, function: Expression) -> Option<Expression> {
+        Some(Expression::FunctionCall {
+            token: self.current_token.clone(),
+            function: Box::new(function),
+            arguments: self.parse_fn_arguments(),
+        })
+    }
+
     fn parse_hash_expr(&mut self) -> Option<Expression> {
         let mut pairs: Vec<(Expression, Expression)> = Vec::new();
 
@@ -172,14 +180,6 @@ impl Parser {
         }
 
         Some(Expression::Literal(Literal::Hash(pairs)))
-    }
-
-    fn parse_fn_call(&mut self, function: Expression) -> Option<Expression> {
-        Some(Expression::FunctionCall {
-            token: self.current_token.clone(),
-            function: Box::new(function),
-            arguments: self.parse_fn_arguments(),
-        })
     }
 
     fn parse_index_expression(&mut self, left: Expression) -> Option<Expression> {

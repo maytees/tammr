@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
-use crate::builtin;
+use crate::builtin::{self, DotBuiltinKind};
 use crate::env::Env;
 use crate::lexer::Token;
 use crate::object::Object;
@@ -150,6 +150,25 @@ impl Evaluator {
         }
     }
 
+    fn eval_dot_expr(
+        &mut self,
+        value: &Expression,
+    ) -> Option<(String, Option<Expression>, Option<Vec<Expression>>)> {
+        match value {
+            Expression::Identifier(iden) => Some((iden.value.clone(), None, None)),
+            Expression::FunctionCall {
+                token,
+                function,
+                arguments,
+            } => Some((
+                token.literal.clone(),
+                Some(*function.clone()),
+                Some(arguments.clone()),
+            )),
+            _ => None,
+        }
+    }
+
     fn eval_dot_notation(&mut self, left: &Expression, right: &Expression) -> Option<Object> {
         let left = self.eval_expression(left);
 
@@ -166,7 +185,19 @@ impl Evaluator {
 
                     return Some(Object::Null);
                 }
-                _ => return Some(self.new_error("Use dot notation on hashes")),
+                Object::String(string) => {
+                    let right = self.eval_dot_expr(right);
+
+                    if right.is_none() {
+                        return Some(self.new_error("Use dot notation on strings"));
+                    }
+
+                    let (name, _func, _args) = right.unwrap();
+
+                    // Is property
+                    return builtin::dot_str_builtins(&string, DotBuiltinKind::Property(name));
+                }
+                _ => return Some(self.new_error("Use dot notation properly")),
             }
         }
 
@@ -269,7 +300,7 @@ impl Evaluator {
                 }
             }
             Object::BuiltinFunction(func) => Some(func(arguments)),
-            _ => Some(self.new_error("Not a function")),
+            _ => Some(self.new_error(&format!("Not a function: {}", function))),
         }
     }
 
