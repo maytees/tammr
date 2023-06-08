@@ -33,6 +33,9 @@ pub fn dot_str_builtins(string: &str, kind: DotBuiltinKind) -> Option<Object> {
             "length" => Some(Object::Integer(string.len() as i64)),
             "chars" => Some(string_to_array(string)),
             "bytes" => Some(string_to_byte_array(string)),
+            "is_empty" => Some(Object::Boolean(string.is_empty())),
+            "is_numeric" => Some(Object::Boolean(string.chars().all(|c| c.is_numeric()))),
+            "is_alpha" => Some(Object::Boolean(string.chars().all(|c| c.is_alphabetic()))),
             _ => Some(Object::Error(format!("No property named {}", name))),
         },
     }
