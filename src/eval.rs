@@ -142,8 +142,35 @@ impl Evaluator {
                 left,
                 index,
             } => self.eval_index_expression(left, index),
-            _ => None,
+            Expression::DotNotation {
+                token: _,
+                left,
+                right,
+            } => self.eval_dot_notation(left, right),
         }
+    }
+
+    fn eval_dot_notation(&mut self, left: &Expression, right: &Expression) -> Option<Object> {
+        let left = self.eval_expression(left);
+
+        if let Some(left) = left {
+            match left {
+                Object::Hash(hash) => {
+                    for (k, v) in hash {
+                        if let Object::String(k) = k {
+                            if k == right.to_string() {
+                                return Some(v);
+                            }
+                        }
+                    }
+
+                    return Some(Object::Null);
+                }
+                _ => return Some(self.new_error("Use dot notation on hashes")),
+            }
+        }
+
+        None
     }
 
     fn eval_index_expression(&mut self, left: &Expression, index: &Expression) -> Option<Object> {
@@ -266,7 +293,10 @@ impl Evaluator {
             return Some(builtin::builtins()[&iden.value].clone());
         }
 
-        Some(self.new_error(&format!("Identifier not found: {}", iden.value)))
+        Some(self.new_error(&format!(
+            "Identifier not found (eval_identifier): {}",
+            iden.value
+        )))
     }
 
     fn eval_if_expression(
