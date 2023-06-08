@@ -1,0 +1,12 @@
+let eggerga = {
+    "name": "Ismaeel",
+    "age": 16,
+    "personal": {
+        "phone": 123,
+        "address": "cranberry lane"
+    }
+};
+
+print(eggerga.age)
+print(eggerga.personal.phone)
+print(eggerga.personal.address)

@@ -12,6 +12,7 @@ enum Precedence {
     Prefix,      // -X or !X
     Call,        // myFunction(X)
     Index,       // array[index]
+    Dot,         // x.y
 }
 
 pub struct Parser {
@@ -60,6 +61,7 @@ impl Parser {
             _ => self.parse_expression_statement(),
         }
     }
+
     fn parse_reassign_statement(&mut self) -> Option<Statement> {
         let name = Identifier {
             token: self.current_token.clone(),
@@ -119,11 +121,28 @@ impl Parser {
                 | TokenType::Sub => self.parse_infix_expression(left.unwrap()),
                 TokenType::LParen => self.parse_fn_call(left.unwrap()),
                 TokenType::LBracket => self.parse_index_expression(left.unwrap()),
+                TokenType::Period => self.parse_dot_notation(left.unwrap()),
                 _ => return left,
             };
         }
 
         left
+    }
+
+    fn parse_dot_notation(&mut self, left: Expression) -> Option<Expression> {
+        self.next_token();
+
+        let right = self.parse_expression(Precedence::Dot);
+
+        if let Some(right) = right {
+            Some(Expression::DotNotation {
+                token: self.current_token.clone(),
+                left: Box::new(left),
+                right: Box::new(right),
+            })
+        } else {
+            None
+        }
     }
 
     fn parse_hash_expr(&mut self) -> Option<Expression> {
@@ -392,6 +411,7 @@ impl Parser {
             TokenType::Div | TokenType::Mul => Precedence::Product,
             TokenType::LParen => Precedence::Call,
             TokenType::LBracket => Precedence::Index,
+            TokenType::Period => Precedence::Dot,
             _ => Precedence::Lowest,
         }
     }
