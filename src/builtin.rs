@@ -7,35 +7,62 @@ pub enum DotBuiltinKind {
     Property(String),
 }
 
-fn string_to_array(string: &str) -> Object {
-    let mut arr: Vec<Object> = Vec::new();
-
-    for char in string.chars() {
-        arr.push(Object::String(char.to_string()))
-    }
-
-    Object::Array(arr)
-}
-
-fn string_to_byte_array(string: &str) -> Object {
-    let mut arr: Vec<Object> = Vec::new();
-
-    for char in string.chars() {
-        arr.push(Object::Integer((char as u8) as i64))
-    }
-
-    Object::Array(arr)
-}
-
 pub fn dot_str_builtins(string: &str, kind: DotBuiltinKind) -> Option<Object> {
     match kind {
         DotBuiltinKind::Property(name) => match name.as_str() {
             "length" => Some(Object::Integer(string.len() as i64)),
-            "chars" => Some(string_to_array(string)),
-            "bytes" => Some(string_to_byte_array(string)),
+            "chars" => Some(Object::Array(
+                string
+                    .chars()
+                    .map(|c| Object::String(c.to_string()))
+                    .collect(),
+            )),
+            "bytes" => Some(Object::Array(
+                string.chars().map(|c| Object::Integer(c as i64)).collect(),
+            )),
             "is_empty" => Some(Object::Boolean(string.is_empty())),
-            "is_numeric" => Some(Object::Boolean(string.chars().all(|c| c.is_numeric()))),
-            "is_alpha" => Some(Object::Boolean(string.chars().all(|c| c.is_alphabetic()))),
+            "is_numeric" => Some(Object::Boolean(
+                string.chars().all(|c| c.is_numeric() || c.is_whitespace()),
+            )),
+            "is_alpha" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_alphabetic() || c.is_whitespace()),
+            )),
+            "is_alphanumeric" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_alphanumeric() || c.is_whitespace()),
+            )),
+            "is_ascii" => Some(Object::Boolean(string.is_ascii())),
+            "is_capitalized" => Some(Object::Boolean(
+                string.chars().next().unwrap().is_uppercase(),
+            )),
+            "is_lowercase" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_lowercase() || c.is_whitespace()),
+            )),
+            "is_uppercase" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_uppercase() || c.is_whitespace()),
+            )),
+            "is_titlecase" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_uppercase() || c.is_whitespace()),
+            )),
+            "is_whitespace" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_whitespace() || c.is_whitespace()),
+            )),
+            "is_punctuation" => Some(Object::Boolean(
+                string
+                    .chars()
+                    .all(|c| c.is_ascii_punctuation() || c.is_whitespace()),
+            )),
             _ => Some(Object::Error(format!("No property named {}", name))),
         },
     }
