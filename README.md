@@ -1,5 +1,10 @@
 # Tammr Scripting Language Specification
 
+> [!INFO]  
+> This project is a "fork" of my implementation of the Monki programming
+> langauge, from the Writing an Interpreter in Go Book, by Thorston Ball.
+> Meaning the code will be very similar.
+
 > [!WARNING]  
 > Nothing in this README is representative of the current source code.
 > Everything below is "theoretical". It will be moved to a wiki/docs website
