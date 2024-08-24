@@ -1,225 +1,210 @@
-# Monki (tammr lang) ( BELOW IS FALSE, ITS JUST SOMETHING OLD I WROTE, BUT THE ACTUAL SOURCE CODE FOLLOWS THE MONKEY LANGUAGE, FROM THE BOOK)
+# Tammr Scripting Language Specification
 
-# Grammar
+> [!WARNING]  
+> Nothing in this README is representative of the current source code.
+> Everything below is "theoretical". It will be moved to a wiki/docs website
+> soon.
 
-The goal of this grammar is to be simple and concise.
+## Table of Contents
 
-## Keywords
-- `let`
-- `function`
-- `if`
-- `else`
-- `import`
-- `true`
-- `false`
-- `return`
-- `loop`
-    - `exit`
-- `as`
-- `do`
-- `not`
-- `or`
-- `and`
-- `is`
+- [Tammr Scripting Language Specification](#tammr-scripting-language-specification)
+	- [Table of Contents](#table-of-contents)
+	- [Introduction](#introduction)
+	- [Basic Syntax](#basic-syntax)
+		- [Comments](#comments)
+		- [Variables](#variables)
+		- [Data Types](#data-types)
+	- [Control Structures](#control-structures)
+		- [Conditionals](#conditionals)
+		- [Loops](#loops)
+	- [Functions](#functions)
+	- [Modules and Imports](#modules-and-imports)
+	- [String Operations](#string-operations)
+	- [Error Handling](#error-handling)
+	- [File Operations](#file-operations)
+	- [Command Execution](#command-execution)
+	- [Environment Variables](#environment-variables)
+	- [Standard Library](#standard-library)
+	- [Shebang Support](#shebang-support)
 
-## Comments
+## Introduction
 
-Comments are simple, you will just need a `//` marker.
+This document specifies the grammar and features of Tammr, a custom scripting language designed for creating automation scripts. Tammr aims to be simple, concise, and powerful enough for various automation tasks.
 
-```c
-// This is a comment, this piece of the source code will not run :)
+## Basic Syntax
+
+### Comments
+
+```tammr
+// This is a single-line comment in Tammr
+
+/*
+   This is a
+   multi-line comment in Tammr
+*/
 ```
 
-## Variables
+### Variables
 
-Once again, the point of this language is to be simple, so creating variables is going to be simple.
-
-Creating a `variable`
-
-```jsx
-let type name = value
-
-OR
-
+```tammr
 let name = value
+let type name = value  // type is optional and serves as a hint in Tammr
 ```
 
-Some things to take away from this: 
+### Data Types
 
-- `type` is completely optional and is nothing but a marker for the dev
-    - The type is just an identifier for the developer, it does not provide anything for the language like methods/functions. The language will not care what the value of `type` is, it only cares about the name and the value.
-    - The language won’t care what `type` is, though if it is a certain marker like `str` , `bool`, or `int` (and more), it will give you a warning if the value does not match the type, it is only a warning and you are *going* to be able to turn that off in the compiler settings.
-        - These will not do anything, they will just provide some context to the writer
+Tammr supports the following data types:
 
-## Conditionals
+- `str`: String
+- `int`: Integer
+- `float`: Float
+- `boolean`: Boolean (true/false)
+- `arr`: Array
+- `module`: Imported module
+- `hash`: Key-value pairs (similar to dictionaries)
 
-Nothing to say here, other than the fact that the language doesn't use parentheses, unlike C styled languages.
+## Control Structures
 
-```jsx
+### Conditionals
+
+```tammr
 if condition do
-
+    // Tammr code here
+else if another_condition do
+    // More Tammr code
+else do
+    // Even more Tammr code
 end
 ```
 
-## Conditionals
+### Loops
 
-Nothing to say here other than he fact that there are no parentheses unlike the `C` family of languages.
-
-```jsx
-// Normal If without Else, or Else If
-if condition do
-	...
+```tammr
+// While-style loop in Tammr
+loop do
+    // Tammr code
+    exit loopName if condition
 end
 
-// If with Else and Else If
-if condition do
-	...
-	else if condition do
-		...
-	else do
-		...
+// For-style loop in Tammr
+loop i from 0 to 10 do
+    // Tammr code
+end
+
+// Foreach-style loop in Tammr
+foreach item in collection do
+    // Tammr code
 end
 ```
 
 ## Functions
 
-Once more, again, ***this language is supposed to be simple and concise,*** so, functions are going to be very simple to define, and call.
-
-```jsx
-									
-function funcName(args) do  // funcName - identifier
-	...
-end             
-
-OR
-
-function(args) do
-	...
-end funcName      // funcName - identifier
-
-```
-
-Here, you can do either way the first way, both will work the same way, the only difference is where the function name is. This is like typedef in C, for example:
-
-```c
-typedef struct thing{
-	...
-} thing;
-```
-
-## Loops
-
-Once more again, ***this language is supposed to be simple and concise, so, loops are very simple***
-
-```jsx
-loop do                 // 
-  ...                  // Not reccomended
-end                   //
-
-OR
-
-loop loopName do      // loopName - identifier
-	...                //  ...      - the code
-end                 //   End      - End of the scope 
-
-OR
-
-loop loopName if condition do      // loopName - identifier
-	...
+```tammr
+function funcName(arg1, arg2 = defaultValue) do
+    // Tammr function body
+    return value
 end
 
-// Exiting a loop
-exit loopName                // loopName - identifier
+// Anonymous function in Tammr
+let double = (x) -> x * 2
 ```
 
-To exit a loop, you have to put in `exit {loop name}` inside the loop, loop name is required due to cases of nested loops (`inspired by Rust 🙂`).
+## Modules and Imports
 
-You can add If, if you want to check a condition before repeating; if you do not put a condition then you are creating an infinite loop (`unless if you add an exit of course`).
+```tammr
+import "./path/to/file.tmr" as moduleName
 
-## Importing files
-
-Linking will be something that will be worked on later, as it is not as important currently. Linking in this language will only paste in the content of the file being imported into the file that is importing the file. So, how do you do it? Well, it’s easy, all you have to do is this:
-
-```jsx
-import "./path/to/file.tmr" as marker   // content in "" is a path, marker is an identifier
-
-doSomething()     // Function in the marker file
-let varInMarker = 50 // Variable in the marker file
-
-OR
-
-marker.doSomething()     // Also a function in the marker file
-marker.varInMarker = 50 // Also a function in the marker file
+moduleName.function()
+// or
+function()  // if not ambiguous
 ```
 
-You are importing this file and setting it to a variable named marker. You can access things from this marker with either `marker. {something}` or with the direct name of the `something` that you want to access, like the example above.
+## String Operations
 
-## Types
+```tammr
+// String concatenation in Tammr
+let fullName = firstName + " " + lastName
 
-Now that we’re done with the *“basic”* things, let’s move on to the *“important”* things, such as types. For every language, there are the basic types, such as ints, booleans, etc. In Tammr, the data types are not something the *“author”* of the program should worry about, its more of something that the language needs to worry about. There are few basic data types in this language, and they consist of:
+// String interpolation in Tammr
+let greeting = "Hello, ${name}!"
 
-- `str`
-- `int`
-- `float`
-- `boolean`
-- `arr`
-- `module`
-- `hash`
+// Multiline strings (Here document) in Tammr
+let multiline = <<EOF
+This is a
+multiline string in Tammr
+EOF
 
-Now, lets explain each one
+// String methods in Tammr
+let length = myString.length()
+let uppercase = myString.toUpper()
+let lowercase = myString.toLower()
+let trimmed = myString.trim()
+let split = myString.split(",")
+let contains = myString.contains("substring")
+let replaced = myString.replace("old", "new")
+```
 
-- `str` is a string, a sequence of characters
-- `int` is a number, specifically, a whole number, no decimals
-- `float` is a number, specifically, a number with decimals, or no decimals, though defining a float requires a decimal
-- `boolean` is simple, it is either `True` or `False`, can also be `0` or `1`
-- `arr` is an array (more on that later)
-- `module` probably a file, it is the variable that a file gets put into when using `Import as`
-- `hash` key value, like json, or dict in python.
+## Error Handling
 
-## Blocks
-
-`Blocks` in this language are really just what would be scopes in other languages.
-
-Code example:
-
-```jsx
-import std as std
-
-function() do
-	println("This print function is inside this function block")
-
-	if true do
-		println("This is a block inside a block")
-	end
-end printInfo
-
-if true do
-	println("This is true and it is in this condition block")
+```tammr
+try do
+    // risky Tammr code
+catch error do
+    // handle error in Tammr
 end
 ```
 
-Do you recognize a pattern? As you can see, every block is started with `do` and is ended with `end`.  
+## File Operations
 
-Here is a visualizer to see the file’s blocks. Keep in mind that the file itself is a block.
+```tammr
+// Reading a file in Tammr
+let content = readFile("path/to/file.txt")
 
-```jsx
- // Main Block
-||
-||   // Function Block
-||  ||   
-||  ||  // Condition Block
-||  || ||
-||  ||  \\ Condition Block
-||  ||
-||   \\ Function Block
-||
-||
-||    // Condition Block
-||   ||
-||   ||
-||    \\ Condition Block
-||
- \\ Main Block
+// Writing to a file in Tammr
+writeFile("path/to/file.txt", content)
+
+// Appending to a file in Tammr
+appendFile("path/to/file.txt", newContent)
+
+// Checking if a file exists in Tammr
+let exists = fileExists("path/to/file.txt")
 ```
 
-## Examples
+## Command Execution
+
+```tammr
+let result = exec("ls -l")
+println(result)
+```
+
+## Environment Variables
+
+```tammr
+// Get environment variable in Tammr
+let path = getEnv("PATH")
+
+// Set environment variable in Tammr
+setEnv("MY_VAR", "value")
+```
+
+## Standard Library
+
+Tammr should include a standard library with common utility functions for:
+
+- Math operations
+- Date and time manipulation
+- Array and hash operations
+- Networking (HTTP requests, etc.)
+- JSON parsing and serialization
+
+## Shebang Support
+
+Tammr scripts can start with a shebang for direct execution on Unix-like systems:
+
+```tammr
+#!/usr/bin/env tammr
+
+// Your Tammr script code here
+```
+
+This specification provides a solid foundation for the Tammr scripting language. It combines simplicity with powerful features that are particularly useful for automation tasks. Remember to implement these features in your Tammr language interpreter or compiler to make them available to users.
