@@ -211,5 +211,3 @@ Tammr scripts can start with a shebang for direct execution on Unix-like systems
 
 // Your Tammr script code here
 ```
-
-This specification provides a solid foundation for the Tammr scripting language. It combines simplicity with powerful features that are particularly useful for automation tasks. Remember to implement these features in your Tammr language interpreter or compiler to make them available to users.
