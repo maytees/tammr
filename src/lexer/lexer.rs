@@ -6,7 +6,11 @@ pub struct Lexer {
     current: char,
 }
 
-const KEYWORDS: &[&str] = &["let", "return", "true", "false", "if", "else", "fn"];
+const KEYWORDS: &[&str] = &[
+    "let", "function", "return", "if", "else", "do", "end", "loop", "exit", "true", "false",
+    "null", "try", "catch", "throw", "and", "or", "not", "is", "import", "as", "foreach", "from",
+    "to",
+];
 
 impl Lexer {
     pub fn new(src: String) -> Self {
@@ -172,11 +176,12 @@ impl Lexer {
                 literal: String::from(":"),
                 position: self.position.clone(),
             }),
-            '"' => {
+            '"' | '\'' => {
                 let mut string = String::new();
+                let starting_quote_type = self.current.clone();
                 self.advance();
 
-                while self.current != '"' {
+                while self.current != starting_quote_type {
                     if self.current == '\\' {
                         self.advance();
                         match self.current {
@@ -226,7 +231,24 @@ impl Lexer {
                 "false" => KeywordType::False,
                 "if" => KeywordType::If,
                 "else" => KeywordType::Else,
-                "fn" => KeywordType::Fn,
+                "function" => KeywordType::Fn, // Changed from "fn" to "function"
+                "do" => KeywordType::Do,
+                "end" => KeywordType::End,
+                "loop" => KeywordType::Loop,
+                "exit" => KeywordType::Exit,
+                "null" => KeywordType::Null,
+                "try" => KeywordType::Try,
+                "catch" => KeywordType::Catch,
+                "throw" => KeywordType::Throw,
+                "and" => KeywordType::And,
+                "or" => KeywordType::Or,
+                "not" => KeywordType::Not,
+                "is" => KeywordType::Is,
+                "as" => KeywordType::As,
+                "import" => KeywordType::Import,
+                "from" => KeywordType::From,
+                "to" => KeywordType::To,
+                "foreach" => KeywordType::Foreach,
                 _ => panic!("Unknown Keyword: {}", ident),
             };
 
