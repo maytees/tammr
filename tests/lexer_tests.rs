@@ -2,7 +2,7 @@ use tammr::lexer::{KeywordType, TokenType};
 use tammr::Lexer;
 
 #[cfg(test)]
-mod test {
+mod lexer_test {
 
     #[test]
     fn test_string() {
@@ -17,7 +17,7 @@ mod test {
     }
 
     #[test]
-    fn lexer_test() {
+    fn tokens_test() {
         use super::{KeywordType, Lexer, TokenType};
 
         let input = String::from(
