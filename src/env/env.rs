@@ -1,6 +1,5 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
 use crate::object::Object;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Env {
