@@ -21,7 +21,7 @@ fn main() {
 }
 
 fn run_file(file: &String) {
-    let input = std::fs::read_to_string(file).expect("SOmething went wrong when opning the file");
+    let input = std::fs::read_to_string(file).expect("Something went wrong when opning the file");
 
     let mut l = lexer::Lexer::new(input);
     let tokens = l.gen_tokens();
