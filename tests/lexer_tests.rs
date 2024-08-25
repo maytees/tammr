@@ -1,24 +1,21 @@
-use tammr::lexer::{KeywordType, TokenType};
-use tammr::Lexer;
-
 #[cfg(test)]
 mod lexer_test {
 
     #[test]
     fn test_string() {
-        use super::Lexer;
+        use tammr::Lexer;
 
         let input = String::from(r#""Hello, World!""#);
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        assert_eq!(tokens[0].ttype, super::TokenType::String);
+        assert_eq!(tokens[0].ttype, tammr::lexer::TokenType::String);
         assert_eq!(tokens[0].literal, String::from("Hello, World!"));
     }
 
     #[test]
     fn tokens_test() {
-        use super::{KeywordType, Lexer, TokenType};
+        use tammr::lexer::{KeywordType, Lexer, TokenType};
 
         let input = String::from(
             r#"
