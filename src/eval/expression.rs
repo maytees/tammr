@@ -1,108 +1,15 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::ast::{BlockStatement, Expression, Identifier, Literal, Program, Statement};
+use super::Evaluator;
+use crate::ast::{Expression, Identifier, Program};
 use crate::builtin::{self, DotBuiltinKind};
 use crate::env::Env;
 use crate::lexer::Token;
 use crate::object::Object;
 
-pub struct Evaluator {
-    env: Rc<RefCell<Env>>,
-}
-
 impl Evaluator {
-    pub fn new() -> Self {
-        Self {
-            env: Rc::new(RefCell::new(Env::new())),
-        }
-    }
-
-    pub fn eval(&mut self, program: &Program) -> Option<Object> {
-        let mut result: Option<Object> = None;
-
-        for stmt in program {
-            match self.eval_statement(stmt) {
-                Some(Object::Return(obj)) => return Some(*obj),
-                Some(Object::Error(msg)) => println!("{}", msg),
-                Some(obj) => result = Some(obj),
-                None => {
-                    return Some(
-                        self.new_error(&format!("Could not evaluate statement: {:?}", stmt)),
-                    )
-                }
-            }
-        }
-
-        result
-    }
-
-    fn new_error(&self, msg: &str) -> Object {
-        Object::Error(msg.to_string())
-    }
-
-    fn eval_block_statement(&mut self, stmts: BlockStatement) -> Option<Object> {
-        let mut result: Option<Object> = None;
-
-        for stmt in stmts {
-            match self.eval_statement(&stmt) {
-                Some(Object::Return(obj)) => return Some(Object::Return(obj)),
-                Some(Object::Error(msg)) => println!("{}", msg),
-                Some(obj) => result = Some(obj),
-                None => {
-                    return Some(
-                        self.new_error(&format!("Could not evaluate statement: {:?}", stmt)),
-                    )
-                }
-            }
-        }
-
-        result
-    }
-
-    fn eval_statement(&mut self, stmt: &Statement) -> Option<Object> {
-        match stmt {
-            Statement::Expression { token: _, value } => self.eval_expression(value),
-            Statement::Return { token: _, value } => self.eval_return(value),
-            Statement::Let {
-                token: _,
-                name,
-                value,
-            } => {
-                let value = self.eval_expression(value)?;
-                self.env.borrow_mut().set(&name.value, value);
-                Some(Object::Empty)
-            }
-            Statement::ReAssign {
-                token: _,
-                name,
-                value,
-            } => self.eval_reassign(name, value),
-        }
-    }
-
-    fn eval_reassign(&mut self, name: &Identifier, value: &Expression) -> Option<Object> {
-        let value = self.eval_expression(value)?;
-
-        if self.env.borrow_mut().get(&name.value).is_some() {
-            self.env.borrow_mut().set(&name.value, value);
-            return Some(Object::Empty);
-        }
-
-        Some(self.new_error(&format!("Identifier not found: {}", name.value)))
-    }
-
-    fn eval_return(&mut self, value: &Expression) -> Option<Object> {
-        let value = self.eval_expression(value);
-
-        if let Some(value) = value {
-            return Some(Object::Return(Box::new(value)));
-        }
-
-        None
-    }
-
-    fn eval_expression(&mut self, value: &Expression) -> Option<Object> {
+    pub(crate) fn eval_expression(&mut self, value: &Expression) -> Option<Object> {
         match value {
             Expression::Literal(lit) => self.eval_literal(lit),
             Expression::Prefix {
@@ -149,7 +56,6 @@ impl Evaluator {
             } => self.eval_dot_notation(left, right),
         }
     }
-
     fn eval_dot_expr(
         &mut self,
         value: &Expression,
@@ -444,43 +350,5 @@ impl Evaluator {
             Object::Integer(int) => Some(Object::Integer(-int)),
             _ => Some(self.new_error("Use - prefix operator on integers or floats")),
         }
-    }
-
-    fn eval_literal(&mut self, lit: &Literal) -> Option<Object> {
-        match lit {
-            Literal::Integer(int) => Some(Object::Integer(*int)),
-            Literal::Boolean(bool) => Some(Object::Boolean(*bool)),
-            Literal::String(string) => Some(Object::String(string.clone())),
-            Literal::Array(array) => {
-                let mut result = Vec::new();
-
-                for expr in array {
-                    let evaluated = self.eval_expression(expr)?;
-                    result.push(evaluated);
-                }
-
-                Some(Object::Array(result))
-            }
-            Literal::Hash(pairs) => self.eval_hash_literal(pairs.to_vec()),
-        }
-    }
-
-    fn eval_hash_literal(&mut self, pairs: Vec<(Expression, Expression)>) -> Option<Object> {
-        let mut hash: Vec<(Object, Object)> = Vec::new();
-
-        for (k, v) in pairs {
-            let key = self.eval_expression(&k)?;
-
-            match key {
-                Object::String(_) => {}
-                _ => return Some(self.new_error("Hash keys must be strings")),
-            };
-
-            let value = self.eval_expression(&v)?;
-
-            hash.push((key, value));
-        }
-
-        Some(Object::Hash(hash))
     }
 }
