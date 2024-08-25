@@ -1,29 +1,29 @@
 let name = "dell wyse laptop";
 
-print(name)
+println(name)
 
-print("name chars", name.chars)
+println("name chars", name.chars)
 
-print("Name bytes", name.bytes)
+println("Name bytes", name.bytes)
 
-print("name is alpha:", name.is_alpha)
+println("name is alpha:", name.is_alpha)
 
-print("123 numerica", "123".is_numeric)
+println("123 numerica", "123".is_numeric)
 
-print("123 alphanum", "123asdf".is_alphanumeric)
+println("123 alphanum", "123asdf".is_alphanumeric)
 
-print(name, "Capitalized", name.is_capitalized)
+println(name, "Capitalized", name.is_capitalized)
 
-print("Hello Capitalized", "Hello".is_capitalized)
+println("Hello Capitalized", "Hello".is_capitalized)
 
-print(name.is_ascii)
+println(name.is_ascii)
 
-print(name.is_lowercase)
+println(name.is_lowercase)
 
-print(name.is_uppercase)
+println(name.is_uppercase)
 
-print(name.is_titlecase)
+println(name.is_titlecase)
 
-print(name.is_whitespace)
+println(name.is_whitespace)
 
-print(name.is_punctuation)
+println(name.is_punctuation)

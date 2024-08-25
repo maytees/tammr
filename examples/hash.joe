@@ -14,6 +14,6 @@ let eggerga = {
 
 // Testing
 
-print(eggerga.age)
-print(eggerga.personal.phone)
-print(eggerga.personal.address)
+println(eggerga.age)
+println(eggerga.personal.phone)
+println(eggerga.personal.address)
