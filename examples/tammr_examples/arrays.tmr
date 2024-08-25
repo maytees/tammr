@@ -1,0 +1,15 @@
+let numbers = [1, 2, 3, 4, 5]
+println("First number: ${numbers[0]}")
+println("Last number: ${numbers[numbers.length() - 1]}")
+
+numbers.push(6)
+println("After push: ${numbers}")
+
+numbers.pop()
+println("After pop: ${numbers}")
+
+let doubled = numbers.map((x) -> x * 2)
+println("Doubled: ${doubled}")
+
+let sum = numbers.reduce((acc, x) -> acc + x, 0)
+println("Sum of numbers: ${sum}")

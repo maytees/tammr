@@ -1,0 +1,13 @@
+// Basic variable declaration and manipulation
+let x = 5
+let y = 10
+let sum = x + y
+println("Sum: ${sum}")
+
+let name = "Tammr"
+println("Hello, ${name}!")
+
+// Type hints (optional)
+let int age = 30
+let str greeting = "Welcome"
+println("${greeting}, you are ${age} years old")

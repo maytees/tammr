@@ -1,0 +1,16 @@
+// Assume we have a file named 'math_utils.tmr' with the following content:
+// function add(a, b) do
+//     return a + b
+// end
+// 
+// function subtract(a, b) do
+//     return a - b
+// end
+
+import "./math_utils.tmr" as math
+
+let sum = math.add(5, 3)
+println("Sum: ${sum}")
+
+let difference = math.subtract(10, 4)
+println("Difference: ${difference}")

@@ -1,0 +1,15 @@
+let person = {
+    "name": "Alice",
+    "age": 30,
+    "city": "Wonderland"
+}
+
+println("Name: ${person['name']}")
+println("Age: ${person['age']}")
+
+person['job'] = "Developer"
+println("Job: ${person['job']}")
+
+foreach key, value in person do
+    println("${key}: ${value}")
+end

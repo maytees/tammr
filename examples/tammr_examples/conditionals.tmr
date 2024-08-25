@@ -1,0 +1,14 @@
+let temperature = 22
+
+if temperature < 0 do
+    println("It's freezing!")
+else if temperature < 20 do
+    println("It's cool")
+else do
+    println("It's warm")
+end
+
+let raining = true
+if raining do
+    println("Take an umbrella")
+end

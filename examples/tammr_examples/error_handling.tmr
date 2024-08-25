@@ -1,0 +1,16 @@
+function divide(a, b) do
+    if b == 0 do
+        throw "Division by zero"
+    end
+    return a / b
+end
+
+try do
+    let result = divide(10, 2)
+    println("Result: ${result}")
+    
+    result = divide(10, 0)
+    println("This won't be printed")
+catch error do
+    println("Error: ${error}")
+end

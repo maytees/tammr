@@ -1,0 +1,18 @@
+// Basic loop
+let i = 0
+loop do
+    println("Iteration ${i}")
+    i = i + 1
+    exit loop_basic if i >= 5
+end
+
+// Loop with range
+loop j from 0 to 5 do
+    println("Count: ${j}")
+end
+
+// Foreach loop
+let fruits = ["apple", "banana", "cherry"]
+foreach fruit in fruits do
+    println("I like ${fruit}")
+end
