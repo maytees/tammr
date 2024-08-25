@@ -1,3 +1,8 @@
+// first line
+
+/*
+this is amulti line
+*/
 let eggerga = {
     "name": "Ismaeel",
     "age": 16,
@@ -6,6 +11,8 @@ let eggerga = {
         "address": "cranberry lane"
     }
 };
+
+// Testing
 
 print(eggerga.age)
 print(eggerga.personal.phone)

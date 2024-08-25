@@ -26,7 +26,7 @@ fn run_file(file: &String) {
     let mut l = lexer::Lexer::new(input);
     let tokens = l.gen_tokens();
 
-    let mut parser = parser::Parser::new(tokens);
+    let mut parser = parser::Parser::new(tokens.expect("Could not tokenize"));
     let program: Option<Program> = parser.parse_program();
 
     if let Some(program) = program {
@@ -61,7 +61,7 @@ fn repl() {
         //     println!("{:?}", token);
         // }
 
-        let mut parser = parser::Parser::new(tokens);
+        let mut parser = parser::Parser::new(tokens.expect("Could not tokenize"));
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {

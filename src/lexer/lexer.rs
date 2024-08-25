@@ -1,3 +1,5 @@
+use std::{error::Error, fmt};
+
 use super::{KeywordType, Position, Token, TokenType};
 
 pub struct Lexer {
@@ -12,6 +14,26 @@ const KEYWORDS: &[&str] = &[
     "to",
 ];
 
+#[derive(Debug)]
+pub enum LexerError {
+    UnexpectedCharacter(char, Position),
+    UnterminatedString(Position),
+    // Add more error types as needed
+}
+
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LexerError::UnexpectedCharacter(c, pos) => {
+                write!(f, "Unexpected character '{}' at {:?}", c, pos)
+            }
+            LexerError::UnterminatedString(pos) => write!(f, "Unterminated string at {:?}", pos),
+        }
+    }
+}
+
+impl Error for LexerError {}
+
 impl Lexer {
     pub fn new(src: String) -> Self {
         Self {
@@ -20,13 +42,12 @@ impl Lexer {
             current: src.chars().next().unwrap_or('\0'),
         }
     }
-
-    pub fn gen_tokens(&mut self) -> Vec<Token> {
+    pub fn gen_tokens(&mut self) -> Result<Vec<Token>, LexerError> {
         let mut tokens = Vec::new();
 
         while self.current != '\0' {
             if self.current.is_whitespace() {
-                self.advance();
+                self.skip_whitespace();
                 continue;
             }
 
@@ -40,18 +61,13 @@ impl Lexer {
                 continue;
             }
 
-            let single = self.tokenize_single();
-
-            if let Some(single) = single {
-                tokens.push(single);
-                self.advance();
-                continue;
+            match self.tokenize_single() {
+                Ok(Some(token)) => tokens.push(token),
+                Ok(None) => {} // Comment case, just continue
+                Err(e) => return Err(e),
             }
 
-            panic!(
-                "Unknown token: {} ascci code: {}",
-                self.current, self.current as u8
-            );
+            self.advance();
         }
 
         tokens.push(Token {
@@ -59,123 +75,141 @@ impl Lexer {
             literal: String::from(""),
             position: self.position.clone(),
         });
-        tokens
+
+        Ok(tokens)
     }
 
-    fn tokenize_single(&mut self) -> Option<Token> {
+    fn skip_whitespace(&mut self) {
+        while self.current.is_whitespace() {
+            self.advance();
+        }
+    }
+
+    fn tokenize_single(&mut self) -> Result<Option<Token>, LexerError> {
         match self.current {
-            ';' => Some(Token {
+            ';' => Ok(Some(Token {
                 ttype: TokenType::Semicolon,
                 literal: String::from(";"),
                 position: self.position.clone(),
-            }),
-            '+' => Some(Token {
+            })),
+            '+' => Ok(Some(Token {
                 ttype: TokenType::Add,
                 literal: String::from("+"),
                 position: self.position.clone(),
-            }),
-            '-' => Some(Token {
+            })),
+            '-' => Ok(Some(Token {
                 ttype: TokenType::Sub,
                 literal: String::from("-"),
                 position: self.position.clone(),
-            }),
-            '*' => Some(Token {
+            })),
+            '*' => Ok(Some(Token {
                 ttype: TokenType::Mul,
                 literal: String::from("*"),
                 position: self.position.clone(),
-            }),
-            '.' => Some(Token {
+            })),
+            '.' => Ok(Some(Token {
                 ttype: TokenType::Period,
                 literal: String::from("."),
                 position: self.position.clone(),
-            }),
-            '/' => Some(Token {
-                ttype: TokenType::Div,
-                literal: String::from("/"),
-                position: self.position.clone(),
-            }),
+            })),
+            '/' => {
+                if self.peek() == '/' {
+                    self.skip_single_line_comment();
+                    Ok(None)
+                } else if self.peek() == '*' {
+                    self.skip_multi_line_comment()?;
+                    Ok(None)
+                } else {
+                    Ok(Some(Token {
+                        ttype: TokenType::Div,
+                        literal: String::from("/"),
+                        position: self.position.clone(),
+                    }))
+                }
+            }
             '=' => {
                 if self.peek() == '=' {
                     self.advance();
-                    return Some(Token {
+                    return Ok(Some(Token {
                         ttype: TokenType::Eq,
                         literal: String::from("=="),
                         position: self.position.clone(),
-                    });
+                    }));
                 }
 
-                Some(Token {
+                Ok(Some(Token {
                     ttype: TokenType::Assign,
                     literal: String::from("="),
                     position: self.position.clone(),
-                })
+                }))
             }
             '!' => {
                 if self.peek() == '=' {
                     self.advance();
-                    return Some(Token {
+                    return Ok(Some(Token {
                         ttype: TokenType::NotEq,
                         literal: String::from("!="),
                         position: self.position.clone(),
-                    });
+                    }));
                 }
 
-                Some(Token {
+                Ok(Some(Token {
                     ttype: TokenType::Bang,
                     literal: String::from("!"),
                     position: self.position.clone(),
-                })
+                }))
             }
-            '<' => Some(Token {
+            '<' => Ok(Some(Token {
                 ttype: TokenType::Lt,
                 literal: String::from("<"),
                 position: self.position.clone(),
-            }),
-            '>' => Some(Token {
+            })),
+            '>' => Ok(Some(Token {
                 ttype: TokenType::Gt,
                 literal: String::from(">"),
                 position: self.position.clone(),
-            }),
-            '(' => Some(Token {
+            })),
+            '(' => Ok(Some(Token {
                 ttype: TokenType::LParen,
                 literal: String::from("("),
                 position: self.position.clone(),
-            }),
-            ')' => Some(Token {
+            })),
+            ')' => Ok(Some(Token {
                 ttype: TokenType::RParen,
                 literal: String::from(")"),
                 position: self.position.clone(),
-            }),
-            '{' => Some(Token {
+            })),
+            '{' => Ok(Some(Token {
                 ttype: TokenType::LBrace,
                 literal: String::from("{"),
                 position: self.position.clone(),
-            }),
-            '}' => Some(Token {
+            })),
+            '}' => Ok(Some(Token {
                 ttype: TokenType::RBrace,
                 literal: String::from("}"),
                 position: self.position.clone(),
-            }),
-            '[' => Some(Token {
+            })),
+            '[' => Ok(Some(Token {
                 ttype: TokenType::LBracket,
                 literal: String::from("["),
                 position: self.position.clone(),
-            }),
-            ']' => Some(Token {
+            })),
+            ']' => Ok(Some(Token {
                 ttype: TokenType::RBracket,
                 literal: String::from("]"),
                 position: self.position.clone(),
-            }),
-            ',' => Some(Token {
+            })),
+            ',' => Ok(Some(Token {
                 ttype: TokenType::Comma,
                 literal: String::from(","),
                 position: self.position.clone(),
-            }),
-            ':' => Some(Token {
+            })),
+            ':' => Ok(Some(Token {
                 ttype: TokenType::Colon,
                 literal: String::from(":"),
                 position: self.position.clone(),
-            }),
+            })),
+            // '"' | '\'' => self.gen_string(),
             '"' | '\'' => {
                 let mut string = String::new();
                 let starting_quote_type = self.current.clone();
@@ -198,13 +232,13 @@ impl Lexer {
                     self.advance();
                 }
 
-                Some(Token {
+                Ok(Some(Token {
                     ttype: TokenType::String,
                     literal: string,
                     position: self.position.clone(),
-                })
+                }))
             }
-            _ => None,
+            c => Err(LexerError::UnexpectedCharacter(c, self.position.clone())),
         }
     }
 
@@ -279,6 +313,31 @@ impl Lexer {
             literal: number,
             position: self.position.clone(),
         }
+    }
+
+    fn skip_single_line_comment(&mut self) {
+        while self.current != '\n' && self.current != '\0' {
+            self.advance();
+        }
+        // if self.current == '\n' {
+        //     self.advance(); // Consume the newline character
+        // }
+    }
+
+    fn skip_multi_line_comment(&mut self) -> Result<(), LexerError> {
+        self.advance(); // Consume the '*'
+        let start_position = self.position.clone();
+
+        while !(self.current == '*' && self.peek() == '/') {
+            if self.current == '\0' {
+                return Err(LexerError::UnterminatedString(start_position)); // Reusing UnterminatedString for unterminated comment
+            }
+            self.advance();
+        }
+
+        self.advance(); // Consume the '*'
+        self.advance(); // Consume the '/'
+        Ok(())
     }
 
     pub fn advance(&mut self) {
