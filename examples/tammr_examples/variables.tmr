@@ -1,13 +1,13 @@
 // Basic variable declaration and manipulation
-let x = 5
-let y = 10
-let sum = x + y
+let number x = 5
+let number y = 10
+let number sum = x + y
 println("Sum: ${sum}")
 
-let name = "Tammr"
+let str name = "Tammr"
 println("Hello, ${name}!")
 
 // Type hints (optional)
-let int age = 30
+let number age = 30
 let str greeting = "Welcome"
 println("${greeting}, you are ${age} years old")

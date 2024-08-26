@@ -1,7 +1,7 @@
 use super::precedence::Precedence;
 use super::Parser;
 use crate::ast::{BlockStatement, Identifier, Statement};
-use crate::lexer::{KeywordType, TokenType};
+use crate::lexer::{KeywordType, PrimitiveKind, TokenType};
 
 impl Parser {
     pub(crate) fn parse_statement(&mut self) -> Option<Statement> {
@@ -76,6 +76,17 @@ impl Parser {
     }
 
     fn parse_let_statement(&mut self) -> Option<Statement> {
+        let primitive_kind: Option<PrimitiveKind>;
+
+        primitive_kind = match &self.peek_token.ttype {
+            TokenType::Keyword(KeywordType::Primitive(p)) => Some(p.clone()),
+            _ => None,
+        };
+
+        if primitive_kind.is_some() {
+            self.next_token();
+        }
+
         if !self.expect_peek(TokenType::Ident) {
             return None;
         }
@@ -101,6 +112,7 @@ impl Parser {
             token: self.current_token.clone(),
             name,
             value,
+            value_kind: primitive_kind.clone(),
         })
     }
 

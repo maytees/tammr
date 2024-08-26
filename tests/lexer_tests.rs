@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod lexer_test {
+    use tammr::lexer::PrimitiveKind;
 
     #[test]
     fn test_double_quote_string() {
@@ -56,8 +57,9 @@ mod lexer_test {
         let input = String::from(
             r#"
     import "math.tmr" as math
-    let x = 5
-    let y = 10
+    let str test = "string?"
+    let number x = 5
+    let number y = 10
     function add(a, b) do
         return a + b
     end
@@ -66,8 +68,8 @@ mod lexer_test {
     else do
         println("y is greater or equal")
     end
-    let array = [1, 2, 3]
-    let hash = {"key": "value"}
+    let arr array = [1, 2, 3]
+    let kv hash = {"key": "value"}
     "#,
         );
 
@@ -80,10 +82,26 @@ mod lexer_test {
             (TokenType::Keyword(KeywordType::As), "as"),
             (TokenType::Ident, "math"),
             (TokenType::Keyword(KeywordType::Let), "let"),
+            (
+                TokenType::Keyword(KeywordType::Primitive(PrimitiveKind::String)),
+                "str",
+            ),
+            (TokenType::Ident, "test"),
+            (TokenType::Assign, "="),
+            (TokenType::String, "string?"),
+            (TokenType::Keyword(KeywordType::Let), "let"),
+            (
+                TokenType::Keyword(KeywordType::Primitive(PrimitiveKind::Number)),
+                "number",
+            ),
             (TokenType::Ident, "x"),
             (TokenType::Assign, "="),
             (TokenType::Number, "5"),
             (TokenType::Keyword(KeywordType::Let), "let"),
+            (
+                TokenType::Keyword(KeywordType::Primitive(PrimitiveKind::Number)),
+                "number",
+            ),
             (TokenType::Ident, "y"),
             (TokenType::Assign, "="),
             (TokenType::Number, "10"),
@@ -117,6 +135,10 @@ mod lexer_test {
             (TokenType::RParen, ")"),
             (TokenType::Keyword(KeywordType::End), "end"),
             (TokenType::Keyword(KeywordType::Let), "let"),
+            (
+                TokenType::Keyword(KeywordType::Primitive(PrimitiveKind::Array)),
+                "arr",
+            ),
             (TokenType::Ident, "array"),
             (TokenType::Assign, "="),
             (TokenType::LBracket, "["),
@@ -127,6 +149,10 @@ mod lexer_test {
             (TokenType::Number, "3"),
             (TokenType::RBracket, "]"),
             (TokenType::Keyword(KeywordType::Let), "let"),
+            (
+                TokenType::Keyword(KeywordType::Primitive(PrimitiveKind::Kv)),
+                "kv",
+            ),
             (TokenType::Ident, "hash"),
             (TokenType::Assign, "="),
             (TokenType::LBrace, "{"),

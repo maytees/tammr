@@ -11,6 +11,7 @@ impl Evaluator {
                 token: _,
                 name,
                 value,
+                value_kind: _,
             } => {
                 let value = self.eval_expression(value)?;
                 self.env.borrow_mut().set(&name.value, value);

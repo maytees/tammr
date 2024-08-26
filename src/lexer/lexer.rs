@@ -1,6 +1,6 @@
 use std::{error::Error, fmt};
 
-use super::{KeywordType, Position, Token, TokenType};
+use super::{token::PrimitiveKind, KeywordType, Position, Token, TokenType};
 
 pub struct Lexer {
     src: String,
@@ -11,7 +11,7 @@ pub struct Lexer {
 const KEYWORDS: &[&str] = &[
     "let", "function", "return", "if", "else", "do", "end", "loop", "exit", "true", "false",
     "null", "try", "catch", "throw", "and", "or", "not", "is", "import", "as", "foreach", "from",
-    "to",
+    "to", "str", "number", "kv", "arr", "bool",
 ];
 
 #[derive(Debug)]
@@ -283,6 +283,11 @@ impl Lexer {
                 "from" => KeywordType::From,
                 "to" => KeywordType::To,
                 "foreach" => KeywordType::Foreach,
+                "bool" => KeywordType::Primitive(PrimitiveKind::Boolean),
+                "str" => KeywordType::Primitive(PrimitiveKind::String),
+                "arr" => KeywordType::Primitive(PrimitiveKind::Array),
+                "number" => KeywordType::Primitive(PrimitiveKind::Number),
+                "kv" => KeywordType::Primitive(PrimitiveKind::Kv),
                 _ => panic!("Unknown Keyword: {}", ident),
             };
 
@@ -319,9 +324,6 @@ impl Lexer {
         while self.current != '\n' && self.current != '\0' {
             self.advance();
         }
-        // if self.current == '\n' {
-        //     self.advance(); // Consume the newline character
-        // }
     }
 
     fn skip_multi_line_comment(&mut self) -> Result<(), LexerError> {

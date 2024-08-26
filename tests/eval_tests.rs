@@ -12,7 +12,7 @@ mod test {
         let tests = vec![
             (
                 r#"
-                let person = {"name": "Joe"};
+                let kv person = {"name": "Joe"};
                 person.name
                 "#,
                 Object::String("Joe".to_string()),
@@ -58,28 +58,28 @@ mod test {
         let tests = vec![
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["one"]
                 "#,
                 Object::Integer(1),
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["two"]
                 "#,
                 Object::Integer(2),
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["three"]
                 "#,
                 Object::Null,
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["one"] + myHash["two"]
                 "#,
                 Object::Integer(3),

@@ -1,4 +1,4 @@
-use crate::lexer::Token;
+use crate::lexer::{PrimitiveKind, Token};
 
 use super::{expression::Expression, Identifier};
 
@@ -8,6 +8,7 @@ pub enum Statement {
         token: Token,
         name: Identifier,
         value: Expression,
+        value_kind: Option<PrimitiveKind>,
     },
     ReAssign {
         token: Token,
