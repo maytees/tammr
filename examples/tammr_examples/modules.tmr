@@ -9,8 +9,8 @@
 
 import "./math_utils.tmr" as math
 
-let sum = math.add(5, 3)
+let number sum = math.add(5, 3)
 println("Sum: ${sum}")
 
-let difference = math.subtract(10, 4)
+let number difference = math.subtract(10, 4)
 println("Difference: ${difference}")

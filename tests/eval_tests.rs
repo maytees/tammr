@@ -12,7 +12,7 @@ mod test {
         let tests = vec![
             (
                 r#"
-                let person = {"name": "Joe"};
+                let kv person = {"name": "Joe"};
                 person.name
                 "#,
                 Object::String("Joe".to_string()),
@@ -33,7 +33,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -58,28 +58,28 @@ mod test {
         let tests = vec![
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["one"]
                 "#,
                 Object::Integer(1),
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["two"]
                 "#,
                 Object::Integer(2),
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["three"]
                 "#,
                 Object::Null,
             ),
             (
                 r#"
-                let myHash = {"one": 1, "two": 2};
+                let kv myHash = {"one": 1, "two": 2};
                 myHash["one"] + myHash["two"]
                 "#,
                 Object::Integer(3),
@@ -93,7 +93,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -132,7 +132,7 @@ mod test {
             let mut l = Lexer::new(input.to_string());
             let tokens = l.gen_tokens();
 
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             let program: Option<Program> = parser.parse_program();
 
             let mut evaluator = Evaluator::new();
@@ -184,7 +184,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -219,7 +219,7 @@ mod test {
             let mut l = Lexer::new(input.to_string());
             let tokens = l.gen_tokens();
 
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             let program: Option<Program> = parser.parse_program();
 
             if let Some(program) = program {
@@ -262,7 +262,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -299,7 +299,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -323,7 +323,7 @@ mod test {
         let mut l = Lexer::new(test.to_string());
         let tokens = l.gen_tokens();
 
-        let mut parser = Parser::new(tokens);
+        let mut parser = Parser::new(tokens.expect("Could not tokenize"));
         let program: Option<Program> = parser.parse_program();
 
         let mut evaluator = Evaluator::new();
@@ -339,26 +339,26 @@ mod test {
     fn function_call_test() {
         let tests = vec![
             (
-                "let identity = fn(x) { x; }; identity(5);",
+                "let identity = function(x) { x; }; identity(5);",
                 Object::Integer(5),
             ),
             (
-                "let identity = fn(x) { return x; }; identity(5);",
+                "let identity = function(x) { return x; }; identity(5);",
                 Object::Integer(5),
             ),
             (
-                "let double = fn(x) { x * 2; }; double(5);",
+                "let double = function(x) { x * 2; }; double(5);",
                 Object::Integer(10),
             ),
             (
-                "let add = fn(x, y) { x + y; }; add(5, 5);",
+                "let add = function(x, y) { x + y; }; add(5, 5);",
                 Object::Integer(10),
             ),
             (
-                "let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));",
+                "let add = function(x, y) { x + y; }; add(5 + 5, add(5, 5));",
                 Object::Integer(20),
             ),
-            ("fn(x) { x; }(5)", Object::Integer(5)),
+            ("function(x) { x; }(5)", Object::Integer(5)),
         ];
 
         for (input, expected) in tests {
@@ -368,7 +368,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -404,7 +404,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -446,7 +446,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -485,7 +485,7 @@ mod test {
             let tokens = l.gen_tokens();
 
             // create new parser with tokens
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             // parse program from parser
             let program: Option<Program> = parser.parse_program();
 
@@ -523,7 +523,7 @@ mod test {
             let mut l = Lexer::new(input.to_string());
             let tokens = l.gen_tokens();
 
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             let program: Option<Program> = parser.parse_program();
 
             if let Some(program) = program {
@@ -547,7 +547,7 @@ mod test {
             let mut l = Lexer::new(input.to_string());
             let tokens = l.gen_tokens();
 
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             let program: Option<Program> = parser.parse_program();
 
             if let Some(program) = program {
@@ -579,7 +579,7 @@ mod test {
             let mut l = Lexer::new(input.to_string());
             let tokens = l.gen_tokens();
 
-            let mut parser = Parser::new(tokens);
+            let mut parser = Parser::new(tokens.expect("Could not tokenize"));
             let program: Option<Program> = parser.parse_program();
 
             if let Some(program) = program {
@@ -598,7 +598,7 @@ mod test {
         let mut l = Lexer::new(input.to_string());
         let tokens = l.gen_tokens();
 
-        let mut parser = Parser::new(tokens);
+        let mut parser = Parser::new(tokens.expect("Could not tokenize"));
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {
@@ -616,7 +616,7 @@ mod test {
         let mut l = Lexer::new(input.to_string());
         let tokens = l.gen_tokens();
 
-        let mut parser = Parser::new(tokens);
+        let mut parser = Parser::new(tokens.expect("Could not tokenize"));
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {
@@ -634,7 +634,7 @@ mod test {
         let mut l = Lexer::new(input.to_string());
         let tokens = l.gen_tokens();
 
-        let mut parser = Parser::new(tokens);
+        let mut parser = Parser::new(tokens.expect("Could not tokenize"));
         let program: Option<Program> = parser.parse_program();
 
         if let Some(program) = program {

@@ -1,10 +1,10 @@
 // Writing to a file
-let content = "Hello, Tammr!"
+let str content = "Hello, Tammr!"
 writeFile("test.txt", content)
 println("File written successfully")
 
 // Reading from a file
-let readContent = readFile("test.txt")
+let str readContent = readFile("test.txt")
 println("File content: ${readContent}")
 
 // Appending to a file
@@ -12,5 +12,5 @@ appendFile("test.txt", "\nTammr is awesome!")
 println("Content appended to file")
 
 // Reading updated file
-let updatedContent = readFile("test.txt")
+let str updatedContent = readFile("test.txt")
 println("Updated file content: ${updatedContent}")

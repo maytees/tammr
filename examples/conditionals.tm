@@ -1,7 +1,7 @@
 let is = true;
 
 if is {
-    print("Hi")
+    println("Hi")
 }else {
-    print("Bye")
+    println("Bye")
 }

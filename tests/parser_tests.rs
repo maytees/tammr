@@ -11,7 +11,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
 
         let program = p.parse_program();
 
@@ -44,7 +44,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
 
         let program = p.parse_program();
 
@@ -80,7 +80,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         println!("{:?}", program);
         if let Some(program) = program {
@@ -111,7 +111,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 1 {
@@ -145,7 +145,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 1 {
@@ -176,7 +176,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
 
         let program = p.parse_program();
 
@@ -209,7 +209,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 1 {
@@ -241,12 +241,12 @@ mod parser_tests {
 
     #[test]
     fn fn_literal() {
-        let input = String::from("fn(x, y) { x + y; }");
+        let input = String::from("function(x, y) { x + y; }");
 
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 1 {
@@ -287,7 +287,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 1 {
@@ -322,7 +322,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -357,7 +357,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -390,7 +390,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -423,7 +423,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -457,7 +457,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -491,7 +491,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {
@@ -530,7 +530,7 @@ mod parser_tests {
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
         if let Some(program) = program {
             if program.len() != 3 {
@@ -564,15 +564,15 @@ mod parser_tests {
     fn let_statement() {
         let input = String::from(
             r#"
-            let x = 5;
-            let y = 10;
-            let foobar = 838383;
+            let number x = 5;
+            let number y = 10;
+            let number foobar = 838383;
             "#,
         );
         let mut l = Lexer::new(input);
         let tokens = l.gen_tokens();
 
-        let mut p = Parser::new(tokens);
+        let mut p = Parser::new(tokens.expect("Could not tokenize"));
         let program = p.parse_program();
 
         if let Some(program) = program {

@@ -1,8 +1,8 @@
 // Executing a system command
-let result = exec("echo Hello from Tammr")
+let str result = exec("echo Hello from Tammr")
 println("Command output: ${result}")
 
 // Using command output in Tammr
-let files = exec("ls -l")
+let str files = exec("ls -l")
 println("Files in current directory:")
 println(files)

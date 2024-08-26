@@ -49,6 +49,7 @@ pub enum TokenType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeywordType {
+    Primitive(PrimitiveKind),
     Let,
     Return,
     True,
@@ -56,4 +57,30 @@ pub enum KeywordType {
     If,
     Else,
     Fn,
+    Do,
+    End,
+    Loop,
+    Exit,
+    Null,
+    Try,
+    Catch,
+    Throw,
+    And,
+    Or,
+    Not,
+    Is,
+    Import,
+    As,
+    From,
+    To,
+    Foreach,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PrimitiveKind {
+    String,
+    Number,
+    Array,
+    Kv,
+    Boolean,
 }

@@ -1,12 +1,12 @@
-let str1 = "Hello"
-let str2 = "World"
+let str str1 = "Hello"
+let str str2 = "World"
 
 // Concatenation
-let combined = str1 + " " + str2
+let str combined = str1 + " " + str2
 println(combined)
 
 // Interpolation
-let name = "Tammr"
+let str name = "Tammr"
 println("Welcome to ${name} language!")
 
 // String methods
@@ -15,8 +15,8 @@ println(combined.toLower())
 println(combined.length())
 println(combined.contains("lo"))
 
-let csv = "apple,banana,cherry"
-let fruits = csv.split(",")
+let str csv = "apple,banana,cherry"
+let str fruits = csv.split(",")
 foreach fruit in fruits do
     println(fruit)
 end

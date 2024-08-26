@@ -1,3 +1,8 @@
+// first line
+
+/*
+this is amulti line
+*/
 let eggerga = {
     "name": "Ismaeel",
     "age": 16,
@@ -7,6 +12,8 @@ let eggerga = {
     }
 };
 
-print(eggerga.age)
-print(eggerga.personal.phone)
-print(eggerga.personal.address)
+// Testing
+
+println(eggerga.age)
+println(eggerga.personal.phone)
+println(eggerga.personal.address)

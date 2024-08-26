@@ -1,29 +1,34 @@
 let name = "dell wyse laptop";
 
-print(name)
+let types_of_wolves = ["sigma", "alpha", "beta"]
 
-print("name chars", name.chars)
+let skibidi = push(types_of_wolves, "X")
+println("sigma nation ", skibidi)
 
-print("Name bytes", name.bytes)
+println(name)
 
-print("name is alpha:", name.is_alpha)
+println("name chars", name.chars)
 
-print("123 numerica", "123".is_numeric)
+println("Name bytes", name.bytes)
 
-print("123 alphanum", "123asdf".is_alphanumeric)
+println("name is alpha:", name.is_alpha)
 
-print(name, "Capitalized", name.is_capitalized)
+println("123 numerica", "123".is_numeric)
 
-print("Hello Capitalized", "Hello".is_capitalized)
+println("123 alphanum", "123asdf".is_alphanumeric)
 
-print(name.is_ascii)
+println(name, "Capitalized", name.is_capitalized)
 
-print(name.is_lowercase)
+println("Hello Capitalized", "Hello".is_capitalized)
 
-print(name.is_uppercase)
+println(name.is_ascii)
 
-print(name.is_titlecase)
+println(name.is_lowercase)
 
-print(name.is_whitespace)
+println(name.is_uppercase)
 
-print(name.is_punctuation)
+println(name.is_titlecase)
+
+println(name.is_whitespace)
+
+println(name.is_punctuation)

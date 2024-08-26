@@ -2,7 +2,7 @@ function greet(name) do
     return "Hello, ${name}!"
 end
 
-let message = greet("Tammr")
+let str message = greet("Tammr")
 println(message)
 
 function add(a, b = 0) do
@@ -13,5 +13,5 @@ println(add(5, 3))  // Prints 8
 println(add(5))     // Prints 5 (using default value)
 
 // Anonymous function
-let multiply = (x, y) -> x * y
+let number multiply = (x, y) -> x * y
 println(multiply(4, 3))  // Prints 12
