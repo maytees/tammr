@@ -4,4 +4,4 @@ mod token;
 
 pub use lexer::Lexer;
 pub use position::Position;
-pub use token::{KeywordType, Token, TokenType};
+pub use token::{KeywordType, PrimitiveKind, Token, TokenType};

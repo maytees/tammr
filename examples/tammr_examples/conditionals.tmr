@@ -1,4 +1,4 @@
-let temperature = 22
+let number temperature = 22
 
 if temperature < 0 do
     println("It's freezing!")
@@ -8,7 +8,7 @@ else do
     println("It's warm")
 end
 
-let raining = true
+let bool raining = true
 if raining do
     println("Take an umbrella")
 end

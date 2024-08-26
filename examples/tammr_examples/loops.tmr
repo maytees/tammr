@@ -1,5 +1,5 @@
 // Basic loop
-let i = 0
+let number i = 0
 loop do
     println("Iteration ${i}")
     i = i + 1
@@ -12,7 +12,7 @@ loop j from 0 to 5 do
 end
 
 // Foreach loop
-let fruits = ["apple", "banana", "cherry"]
+let arr fruits = ["apple", "banana", "cherry"]
 foreach fruit in fruits do
     println("I like ${fruit}")
 end

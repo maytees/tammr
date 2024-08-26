@@ -564,9 +564,9 @@ mod parser_tests {
     fn let_statement() {
         let input = String::from(
             r#"
-            let x = 5;
-            let y = 10;
-            let foobar = 838383;
+            let number x = 5;
+            let number y = 10;
+            let number foobar = 838383;
             "#,
         );
         let mut l = Lexer::new(input);
