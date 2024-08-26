@@ -143,5 +143,26 @@ pub fn builtins() -> HashMap<String, Object> {
         }),
     );
 
+    map.insert(
+        "pop".to_string(),
+        Object::BuiltinFunction(|args| {
+            if args.len() != 1 {
+                return Object::Error(format!(
+                    "Wrong number of arguments. Got {}, expected 1",
+                    args.len()
+                ));
+            }
+
+            match &args[0] {
+                Object::Array(array) => {
+                    let mut new_array = array.clone();
+                    new_array.pop();
+                    Object::Array(new_array)
+                }
+                _ => Object::Error(format!("Argument to `push` must be ARRAY, got {}", args[0])),
+            }
+        }),
+    );
+
     map
 }

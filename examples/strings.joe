@@ -1,5 +1,10 @@
 let name = "dell wyse laptop";
 
+let types_of_wolves = ["sigma", "alpha", "beta"]
+
+let skibidi = push(types_of_wolves, "X")
+println("sigma nation ", skibidi)
+
 println(name)
 
 println("name chars", name.chars)

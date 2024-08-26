@@ -11,3 +11,16 @@ println("Hello, ${name}!")
 let number age = 30
 let str greeting = "Welcome"
 println("${greeting}, you are ${age} years old")
+
+let rizzlers = function() {
+    return "very skibidi"
+}
+
+
+let kv table = {
+    "skibidi": function() {
+        return "not skibidi"
+    }
+}
+
+fprintln("{}", table.skibidi())
