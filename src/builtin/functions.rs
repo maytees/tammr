@@ -67,6 +67,62 @@ pub fn builtins() -> HashMap<String, Object> {
     );
 
     map.insert(
+        "fprintln".to_string(),
+        Object::BuiltinFunction(|args| {
+            if args.is_empty() {
+                return Object::Error(
+                    "fprintln requires at least one argument (format string)".to_string(),
+                );
+            }
+
+            let format_string = match &args[0] {
+                Object::String(s) => s,
+                _ => {
+                    return Object::Error("First argument to fprintln must be a string".to_string())
+                }
+            };
+
+            let mut result = String::new();
+            let mut arg_index = 1;
+            let mut chars = format_string.chars().peekable();
+
+            while let Some(ch) = chars.next() {
+                if ch == '{' {
+                    if chars.peek() == Some(&'}') {
+                        chars.next(); // consume the closing '}'
+                        if arg_index < args.len() {
+                            result.push_str(&args[arg_index].to_string());
+                            arg_index += 1;
+                        } else {
+                            return Object::Error(
+                                "Not enough arguments provided for format string".to_string(),
+                            );
+                        }
+                    } else {
+                        result.push(ch);
+                    }
+                } else if ch == '}' {
+                    if chars.peek() == Some(&'}') {
+                        chars.next(); // consume the second '}'
+                        result.push('}');
+                    } else {
+                        return Object::Error("Invalid format string: unmatched '}'".to_string());
+                    }
+                } else {
+                    result.push(ch);
+                }
+            }
+
+            if arg_index < args.len() {
+                return Object::Error("Too many arguments provided for format string".to_string());
+            }
+
+            println!("{}", result);
+            Object::Empty
+        }),
+    );
+
+    map.insert(
         "push".to_string(),
         Object::BuiltinFunction(|args| {
             if args.len() != 2 {
